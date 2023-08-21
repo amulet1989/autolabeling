@@ -14,3 +14,7 @@ if not os.path.exists(IMAGE_DIR_PATH):
 
 if not os.path.exists(DATASET_DIR_PATH):
     os.mkdir(DATASET_DIR_PATH)
+
+IMAGE_TEST = os.path.join(HOME, "test", "image_test")
+DATA_TEST = os.path.join(HOME, "test", "data_test")
+VIDEO_TEST = os.path.join(HOME, "test", "video_test")

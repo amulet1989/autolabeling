@@ -2,6 +2,8 @@ from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from src import config
 
+base_model = GroundingDINO(ontology=CaptionOntology({"product held by": "product"}))
+
 
 def autolabel_images(
     input_folder=config.IMAGE_DIR_PATH,
@@ -25,9 +27,12 @@ def autolabel_images(
     # create the ontology
     ontology = CaptionOntology(ontology)
 
-    base_model = GroundingDINO(
-        ontology=ontology, box_threshold=box_threshold, text_threshold=text_threshold
-    )
+    # base_model = GroundingDINO(
+    #    ontology=ontology, box_threshold=box_threshold, text_threshold=text_threshold
+    # )
+    base_model.ontology = ontology
+    base_model.box_threshold = box_threshold
+    base_model.text_threshold = text_threshold
 
     # label all images in a folder called `context_images`
     base_model.label(
