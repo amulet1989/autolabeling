@@ -15,7 +15,7 @@ Aplica una arquitectura de doble codificador y decodificador simple, lo que sign
 ![Arquitectura](https://i.imgur.com/REICgNm.png)
 
 ## Instalación
-- 1- Clonar el repositorio https://github.com/amulet1989/autolabeling.git
+- 1- Clonar el repositorio https://github.com/amulet1989/autolabeling
 - 2- Generar un .venv y activarlo usando
 
 ```
