@@ -101,10 +101,11 @@ def main():
     # Run pipeline
     # 1- Convert videos to images
     # 2- Run autolabel for each image
+    # 3- Merge datasets
 
     # get all folders into video_dir
     video_paths = get_video_folder_paths(args.video)
-
+    # run autolabels
     if len(video_paths) == 0:
         print("No se encontraron videos")
         return
