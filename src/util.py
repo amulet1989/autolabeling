@@ -71,7 +71,14 @@ def get_video_folder_paths(directory: str) -> List:
         return folder_paths
 
 
-def merge_datasets(dataset_paths, output_path):
+def merge_datasets(dataset_paths: List, output_path: str):
+    """
+    Merge datasets.
+
+    Args:
+        dataset_paths (list): List of paths to the datasets.
+        output_path (str): Path to the output directory.
+    """
     merged_data = {
         "names": [],
         "nc": 0,

@@ -1,7 +1,7 @@
 import argparse
 from src import config
 import json
-from src.util import video2images, get_video_folder_paths
+from src.util import video2images, get_video_folder_paths, merge_datasets
 from src.model import autolabel_images
 from tqdm import tqdm
 import os
@@ -101,7 +101,7 @@ def main():
     # Run pipeline
     # 1- Convert videos to images
     # 2- Run autolabel for each image
-    # 3- Merge datasets
+    # 3- Union de los Datasets
 
     # get all folders into video_dir
     video_paths = get_video_folder_paths(args.video)
@@ -132,6 +132,16 @@ def main():
                 args.box_threshold,
                 args.text_threshold,
             )
+
+    # Unir datasets
+    # Nombtre d ecarpeta de cada datatset individual
+    folders = os.listdir(args.output_images)
+    # Lista de paths de cada dataset individual
+    dataset_paths = [os.path.join(args.output_images, folder) for folder in folders]
+    # Union de los datasets
+    output_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
+    merge_datasets(dataset_paths, output_path)
+    print("Proceso finalizado")
 
 
 if __name__ == "__main__":
