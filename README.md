@@ -15,17 +15,18 @@ Aplica una arquitectura de doble codificador y decodificador simple, lo que sign
 ![Arquitectura](https://i.imgur.com/REICgNm.png)
 
 ## Instalación
-- 1- Clonar el repositorio
+- 1- Clonar el repositorio https://github.com/amulet1989/autolabeling.git
 - 2- Generar un .venv y activarlo usando
 
 ```
+python -m venv .venv
 .\.venv\Scripts\activate
 ```
 - 3- instalar las dependencias
 ```
 pip install -r requirements.txt
 ```
-- 4- asegurarse de tener una carpeta "videos" con subcarpetas con los videos de cada producto. Cada carpeta de producto contendrá tres videos de dos minutos más un archivo *ontology.json* con la ontología necesaria definiendo que queremos que el modelo detecte. La onología contiene el diccionario ontológico que tiene el formato {caption: class} donde *caption* es la indicación enviada al modelo base, y *class* es la etiqueta que se guardará para ese caption en las anotaciones generadas
+- 4- asegurarse de tener una carpeta "videos" con subcarpetas con los videos de cada producto. Cada carpeta de producto contendrá tres videos de dos minutos más un archivo *ontology.json* con la ontología necesaria definiendo que queremos que el modelo detecte. La onología contiene el diccionario ontológico que tiene el formato {caption0: class0, captio1:class1...} donde *caption* es la indicación enviada al modelo base, y *class* es la etiqueta que se guardará para ese caption en las anotaciones generadas
 
 Ejemplo de archivo ontology.json:
 ```
@@ -39,4 +40,4 @@ Ejemplo de archivo ontology.json:
 python autolabeling.py --frame_rate 350
 
 ```
-Finalmente se generará la carpeta *"dataset"* con una carpeta para cada producto y una carpeta Merged_Dataset con un dataset listo para entrenar un modelo YOLO o DETR. 
+Finalmente se generará la carpeta *"dataset"* con subcarpetas (un dataset para cada producto) y la carpeta Merged_Dataset con un dataset de todos los objetos individuales listo para entrenar un modelo YOLO o DETR. 
