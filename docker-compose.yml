@@ -1,0 +1,14 @@
+version: '3'
+services:
+  autolabeling:
+    image: autolabeling
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./dataset:/app/dataset
+      - ./images:/app/images
+      - ./videos:/app/videos
+    #environment: # You can set environment variables here if needed
+    ports:
+      - "8888:8888" # Expose Jupyter Notebook port
