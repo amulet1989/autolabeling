@@ -6,6 +6,7 @@ from src.model import autolabel_images
 from tqdm import tqdm
 import os
 from typing import Dict
+import shutil
 
 
 def mypipeline(
@@ -33,13 +34,17 @@ def mypipeline(
     """
     # create image folder for each video folder
     image_dir_path = os.path.join(image_dir_path, os.path.basename(video_path))
-    if not os.path.exists(image_dir_path):
-        os.mkdir(image_dir_path)
+    if os.path.exists(image_dir_path):
+        shutil.rmtree(image_dir_path)  # Si ya existe Borra el directorio y su contenido
+    os.mkdir(image_dir_path)  # y lo Crea el directorio nuevamente
 
     # create dataset folder for each video folder
     dataset_dir_path = os.path.join(output_images, os.path.basename(video_path))
-    if not os.path.exists(dataset_dir_path):
-        os.mkdir(dataset_dir_path)
+    if os.path.exists(dataset_dir_path):
+        shutil.rmtree(
+            dataset_dir_path
+        )  # Si ya existe borra el directorio y su contenido
+    os.mkdir(dataset_dir_path)  # y lo crea el directorio nuevamente
 
     # convert video to images
     video2images(video_path, image_dir_path, frame_rate)
@@ -134,12 +139,15 @@ def main():
             )
 
     # Unir datasets
-    # Nombtre d ecarpeta de cada datatset individual
+    # Si existe la carpeta Merged_Dataset Borra el directorio y su contenid
+    output_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
+    if os.path.exists(output_path):
+        shutil.rmtree(output_path)  # Si ya existe Borra el directorio y su contenido
+    # Nombre de carpeta de cada datatset individual
     folders = os.listdir(args.output_images)
     # Lista de paths de cada dataset individual
     dataset_paths = [os.path.join(args.output_images, folder) for folder in folders]
-    # Union de los datasets
-    output_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
+    # Hacer el merge
     merge_datasets(dataset_paths, output_path)
     print("Proceso finalizado")
 
