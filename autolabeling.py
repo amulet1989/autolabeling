@@ -3,6 +3,7 @@ from src import config
 import json
 from src.util import video2images, get_video_folder_paths, merge_datasets
 from src.model import autolabel_images
+from src.dataset_processing import run_processing_dataset
 from tqdm import tqdm
 import os
 from typing import Dict
@@ -139,7 +140,7 @@ def main():
             )
 
     # Unir datasets
-    # Si existe la carpeta Merged_Dataset Borra el directorio y su contenid
+    # Si existe la carpeta Merged_Dataset Borra el directorio y su contenido
     output_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
     if os.path.exists(output_path):
         shutil.rmtree(output_path)  # Si ya existe Borra el directorio y su contenido
@@ -149,6 +150,22 @@ def main():
     dataset_paths = [os.path.join(args.output_images, folder) for folder in folders]
     # Hacer el merge
     merge_datasets(dataset_paths, output_path)
+
+    # Procesar Merged_Dataset/train para eliminar errores de anotación
+    run_processing_dataset(
+        os.path.join(output_path, "train", "images"),
+        os.path.join(output_path, "train", "labels"),
+        max_size=0.2,
+        iou_threshold=0.1,
+    )
+    # Procesar Merged_Dataset/valid para eliminar errores de anotación
+    run_processing_dataset(
+        os.path.join(output_path, "valid", "images"),
+        os.path.join(output_path, "valid", "labels"),
+        max_size=0.2,
+        iou_threshold=0.1,
+    )
+
     print("Proceso finalizado")
 
 

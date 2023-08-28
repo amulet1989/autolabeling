@@ -1,74 +1,105 @@
 import os
-import supervision as sv
-
-# Definir el tamaño mínimo y máximo de las BBox a eliminar
-min_size = 10
-max_size = 100
-
-# Definir el umbral de solapamiento (IoU)
-iou_threshold = 0.5
+import cv2
 
 
-# Crear una función para determinar si una BBox está dentro del rango de tamaño
-def is_bbox_in_size_range(bbox):
-    width = bbox.xmax - bbox.xmin
-    height = bbox.ymax - bbox.ymin
-    return min_size <= width <= max_size and min_size <= height <= max_size
+def remove_empty_labels(image_dir, label_dir):
+    for label_file in os.listdir(label_dir):
+        label_path = os.path.join(label_dir, label_file)
+        lab_filename = label_file.replace(".txt", ".jpg")
+
+        if os.stat(label_path).st_size == 0:
+            os.remove(label_path)
+            os.remove(os.path.join(image_dir, lab_filename))
 
 
-# Crear una función para calcular el índice de solapamiento (IoU) entre dos BBox
-def bbox_iou(bbox1, bbox2):
-    x1 = max(bbox1.xmin, bbox2.xmin)
-    y1 = max(bbox1.ymin, bbox2.ymin)
-    x2 = min(bbox1.xmax, bbox2.xmax)
-    y2 = min(bbox1.ymax, bbox2.ymax)
-    inter_area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
-    bbox1_area = (bbox1.xmax - bbox1.xmin + 1) * (bbox1.ymax - bbox1.ymin + 1)
-    bbox2_area = (bbox2.xmax - bbox2.xmin + 1) * (bbox2.ymax - bbox2.ymin + 1)
-    union_area = bbox1_area + bbox2_area - inter_area
-    return inter_area / union_area
+def remove_large_bboxes(label_dir, max_size):
+    for label_file in os.listdir(label_dir):
+        label_path = os.path.join(label_dir, label_file)
+        with open(label_path, "r") as f:
+            annotations = f.readlines()
+        updated_annotations = []
+        for annotation in annotations:
+            class_id, x, y, w, h = map(float, annotation.strip().split())
+            if w < max_size and h < max_size:
+                updated_annotations.append(annotation)
+        with open(label_path, "w") as f:
+            f.writelines(updated_annotations)
 
 
-# Eliminar imágenes sin anotaciones
-def remove_nolabeled_data(dataset):
-    images_without_annotations = [image for image in dataset if not image.annotations]
-    for image in images_without_annotations:
-        dataset.remove(image)
+def remove_overlapping_bboxes(label_dir, iou_threshold=0.2):
+    for label_file in os.listdir(label_dir):
+        label_path = os.path.join(label_dir, label_file)
+        with open(label_path, "r") as f:
+            annotations = f.readlines()
+        updated_annotations = []
+        for i, annotation in enumerate(annotations):
+            bbox1 = list(map(float, annotation.strip().split()[1:]))
+            skip = False
+            for j in range(i + 1, len(annotations)):
+                bbox2 = list(map(float, annotations[j].strip().split()[1:]))
+                if iou(bbox1, bbox2) > iou_threshold:
+                    skip = True
+                    break
+            if not skip:
+                updated_annotations.append(annotation)
+        with open(label_path, "w") as f:
+            f.writelines(updated_annotations)
 
 
-# Eliminar BBox de un tamaño determinado
-def remove_big_bbox(dataset):
-    for image in dataset:
-        image.annotations = [
-            ann for ann in image.annotations if not is_bbox_in_size_range(ann.bbox)
-        ]
+def iou(bbox1, bbox2):
+    x1, y1, w1, h1 = bbox1
+    x2, y2, w2, h2 = bbox2
+    x_overlap = max(0, min(x1 + w1, x2 + w2) - max(x1, x2))
+    y_overlap = max(0, min(y1 + h1, y2 + h2) - max(y1, y2))
+    intersection = x_overlap * y_overlap
+    union = w1 * h1 + w2 * h2 - intersection
+    return intersection / union
 
 
-# Eliminar BBox superpuestos
-def remove_overlapped_bbox(dataset):
-    for image in dataset:
-        # Ordenar las anotaciones según su puntuación de confianza, de mayor a menor
-        annotations = sorted(
-            image.annotations, key=lambda ann: ann.confidence, reverse=True
-        )
-        final_annotations = []
-        for ann in annotations:
-            # Comprobar si la BBox actual se solapa con alguna de las BBox finales
-            if not any(
-                bbox_iou(ann.bbox, final_ann.bbox) > iou_threshold
-                for final_ann in final_annotations
-            ):
-                final_annotations.append(ann)
-        image.annotations = final_annotations
-
-
-def process_dataset(dataset):
+def run_processing_dataset(
+    image_dir: str,
+    label_dir: str,
+    max_size: float = 0.2,
+    iou_threshold: float = 0.1,
+    remove_empty: bool = True,
+    remove_large: bool = True,
+    remove_overlapping: bool = True,
+) -> None:
     """
-    Procesa un conjunto de datos.
+    Process a dataset of images and labels.
 
-    Args:
-        dataset (sv.DetectionDataset): Conjunto de datos a procesar.
+    Parameters
+    ----------
+    image_dir : str
+        Path to the directory containing the images.
+    label_dir : str
+        Path to the directory containing the labels.
+    max_size : float
+        Maximum size of a bounding box.
+    iou_threshold : float
+        Minimum IoU between two bounding boxes.
+    remove_empty : bool
+        If True, remove images with no labels.
+    remove_large : bool
+        If True, remove images with bounding boxes larger than max_size.
+    remove_overlapping : bool
+        If True, remove bounding boxes that overlap with each other.
+
+    Returns
+    -------
+    None.
+
+    Notes
+    -----
+    This function is used to process the Merged_Dataset/train and Merged_Dataset/valid
+    datasets. It removes empty labels, images with bounding boxes larger than
+    max_size, images with bounding boxes that overlap with each other, and
+    images with no labels.
+
     """
-    remove_nolabeled_data(dataset)
-    remove_big_bbox(dataset)
-    remove_overlapped_bbox(dataset)
+    if remove_empty:
+        remove_empty_labels(image_dir, label_dir)
+    if remove_large and max_size is not None:
+        remove_large_bboxes(label_dir, max_size)
+    if remove_overlapping:
+        remove_overlapping_bboxes(label_dir, iou_threshold)
