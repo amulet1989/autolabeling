@@ -94,6 +94,8 @@ def run_processing_dataset(
         If True, remove images with bounding boxes larger than max_size.
     remove_overlapping : bool
         If True, remove bounding boxes that overlap with each other.
+    remove_multiple : bool
+        If True, remove images with multiple bounding boxes.
 
     Returns
     -------

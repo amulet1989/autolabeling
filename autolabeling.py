@@ -102,6 +102,40 @@ def main():
     parser.add_argument(
         "--text_threshold", default=0.25, type=float, help="Umbral de texto"
     )
+    parser.add_argument(
+        "--max_size", default=0.5, type=float, help="Tamaño maximo de BBox"
+    )
+    parser.add_argument(
+        "--iou_threshold",
+        default=0.1,
+        type=float,
+        help="IoU maxima permitaida de dos BBox",
+    )
+    parser.add_argument(
+        "--remove_empty",
+        default=True,
+        type=bool,
+        help="Eliminar imagenes sin BBox detectados",
+    )
+    parser.add_argument(
+        "--remove_large",
+        default=True,
+        type=bool,
+        help="Eliminar BBox demasiado grandes",
+    )
+    parser.add_argument(
+        "--remove_overlapping",
+        default=True,
+        type=bool,
+        help="Si hay BBox que se superpongan dejar solo uno",
+    )
+    parser.add_argument(
+        "--remove_multiple",
+        default=True,
+        type=bool,
+        help="Si queda mas de un objeto detectado eliminar imagen",
+    )
+
     args = parser.parse_args()
 
     # Run pipeline
@@ -155,15 +189,23 @@ def main():
     run_processing_dataset(
         os.path.join(output_path, "train", "images"),
         os.path.join(output_path, "train", "labels"),
-        max_size=0.5,
-        iou_threshold=0.1,
+        max_size=args.max_size,
+        iou_threshold=args.iou_threshold,
+        remove_empty=args.remove_empty,
+        remove_large=args.remove_large,
+        remove_overlapping=args.remove_overlapping,
+        remove_multiple=args.remove_multiple,
     )
     # Procesar Merged_Dataset/valid para eliminar errores de anotación
     run_processing_dataset(
         os.path.join(output_path, "valid", "images"),
         os.path.join(output_path, "valid", "labels"),
-        max_size=0.5,
-        iou_threshold=0.1,
+        max_size=args.max_size,
+        iou_threshold=args.iou_threshold,
+        remove_empty=args.remove_empty,
+        remove_large=args.remove_large,
+        remove_overlapping=args.remove_overlapping,
+        remove_multiple=args.remove_multiple,
     )
 
     print("Proceso finalizado")
