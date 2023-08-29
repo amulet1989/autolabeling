@@ -155,14 +155,14 @@ def main():
     run_processing_dataset(
         os.path.join(output_path, "train", "images"),
         os.path.join(output_path, "train", "labels"),
-        max_size=0.2,
+        max_size=0.5,
         iou_threshold=0.1,
     )
     # Procesar Merged_Dataset/valid para eliminar errores de anotación
     run_processing_dataset(
         os.path.join(output_path, "valid", "images"),
         os.path.join(output_path, "valid", "labels"),
-        max_size=0.2,
+        max_size=0.5,
         iou_threshold=0.1,
     )
 

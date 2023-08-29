@@ -1,15 +1,24 @@
 import os
-import cv2
 
 
-def remove_empty_labels(image_dir, label_dir):
+def remove_empty_labels(image_dir, label_dir, remove_multiple=False):
     for label_file in os.listdir(label_dir):
         label_path = os.path.join(label_dir, label_file)
         lab_filename = label_file.replace(".txt", ".jpg")
 
-        if os.stat(label_path).st_size == 0:
+        # Check if the label file is empty or if remove_multiple is True and it contains multiple BBoxes
+        if os.stat(label_path).st_size == 0 or (
+            remove_multiple and contains_multiple_bboxes(label_path)
+        ):
             os.remove(label_path)
             os.remove(os.path.join(image_dir, lab_filename))
+
+
+def contains_multiple_bboxes(label_path):
+    with open(label_path, "r") as f:
+        lines = f.readlines()
+        num_bboxes = len(lines)
+        return num_bboxes > 1
 
 
 def remove_large_bboxes(label_dir, max_size):
@@ -64,6 +73,7 @@ def run_processing_dataset(
     remove_empty: bool = True,
     remove_large: bool = True,
     remove_overlapping: bool = True,
+    remove_multiple: bool = True,
 ) -> None:
     """
     Process a dataset of images and labels.
@@ -97,9 +107,9 @@ def run_processing_dataset(
     images with no labels.
 
     """
-    if remove_empty:
-        remove_empty_labels(image_dir, label_dir)
     if remove_large and max_size is not None:
         remove_large_bboxes(label_dir, max_size)
     if remove_overlapping:
         remove_overlapping_bboxes(label_dir, iou_threshold)
+    if remove_empty:
+        remove_empty_labels(image_dir, label_dir, remove_multiple=remove_multiple)
