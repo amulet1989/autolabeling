@@ -9,6 +9,14 @@ services:
       - ./dataset:/app/dataset
       - ./images:/app/images
       - ./videos:/app/videos
+      - ./test:/app/test
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     #environment: # You can set environment variables here if needed
     ports:
       - "8888:8888" # Expose Jupyter Notebook port
