@@ -3,6 +3,10 @@ import shutil
 import yaml
 import cv2
 import albumentations as A
+from tqdm import tqdm
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
 def single_obj_bb_yolo_conversion(transformed_bboxes, class_names):
@@ -62,16 +66,16 @@ def get_bboxes_list(inp_lab_pth, classes):
     yolo_str_labels = open(inp_lab_pth, "r").read()
     if yolo_str_labels:
         if "\n" in yolo_str_labels:
-            print("multi-objs")
+            # print("multi-objs")
             album_bb_lists = get_album_bb_lists(yolo_str_labels, classes)
         else:
-            print("single line ")
+            # print("single line ")
             album_bb_lists = get_album_bb_list(yolo_str_labels, classes)
             album_bb_lists = [
                 album_bb_lists
             ]  # require 2d list in alumbentation function
     else:
-        print("No object")
+        # print("No object")
         album_bb_lists = []
     return album_bb_lists
 
@@ -133,6 +137,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
         os.makedirs(out_lab_pth_valid)
 
     # Copy valid dataset to output folder
+    logging.info("Coping valid dataset ...")
     for file in os.listdir(inp_img_pth_valid):
         shutil.copy(
             os.path.join(inp_img_pth_valid, file),
@@ -143,7 +148,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
             os.path.join(inp_lab_pth_valid, file),
             os.path.join(out_lab_pth_valid, file),
         )
-
+    logging.info("Coping data.yaml ...")
     # copy data.yaml to output folder
     shutil.copy(
         os.path.join(input_path, "data.yaml"),
@@ -158,8 +163,8 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
     CLASSES = data["names"]
 
     imgs = os.listdir(inp_img_pth)
-
-    for img_file in imgs:
+    logging.info("Generating augmented images ...")
+    for img_file in tqdm(imgs):
         file_name = img_file.split(".")[0]
         image = cv2.imread(os.path.join(inp_img_pth, img_file))
         lab_pth = os.path.join(inp_lab_pth, file_name + ".txt")
@@ -170,3 +175,4 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
             apply_aug(
                 image, album_bboxes, out_lab_pth, out_img_pth, aug_file_name, CLASSES
             )
+    logging.info("Data augmentation ended ...")
