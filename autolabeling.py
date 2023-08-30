@@ -4,6 +4,7 @@ import json
 from src.util import video2images, get_video_folder_paths, merge_datasets
 from src.model import autolabel_images
 from src.dataset_processing import run_processing_dataset
+from src.data_augmentation import augment_dataset
 from tqdm import tqdm
 import os
 from typing import Dict
@@ -78,7 +79,7 @@ def main():
         help="Ruta al directorio de imágenes",
     )
     parser.add_argument(
-        "--frame_rate", default=10, type=int, help="Tasa de cuadros por segundo"
+        "--frame_rate", default=1, type=int, help="Tasa de cuadros por segundo"
     )
     parser.add_argument(
         "--ontology",
@@ -134,6 +135,12 @@ def main():
         default=True,
         type=bool,
         help="Si queda mas de un objeto detectado eliminar imagen",
+    )
+    parser.add_argument(
+        "--augmented_for",
+        default=4,
+        type=int,
+        help="Proporción en la que se aumentará el dataset",
     )
 
     args = parser.parse_args()
@@ -206,6 +213,17 @@ def main():
         remove_large=args.remove_large,
         remove_overlapping=args.remove_overlapping,
         remove_multiple=args.remove_multiple,
+    )
+
+    # Generar la aumentación de datos
+    dataset_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
+    augmented_dataset_path = os.path.join(config.DATASET_DIR_PATH, "Augmented_Dataset")
+    # creating aumented datased directory
+    if not os.path.exists(augmented_dataset_path):
+        os.makedirs(augmented_dataset_path)
+
+    augment_dataset(
+        dataset_path, augmented_dataset_path, augmented_for=args.augmented_for
     )
 
     print("Proceso finalizado")

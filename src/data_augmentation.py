@@ -83,12 +83,14 @@ def get_bboxes_list(inp_lab_pth, classes):
 def apply_aug(image, bboxes, out_lab_pth, out_img_pth, transformed_file_name, classes):
     transform = A.Compose(
         [
-            # A.RandomCrop(width=300, height=300),
             A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5),
             A.RandomBrightnessContrast(p=-1),
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0),
             A.CLAHE(clip_limit=(0, 1), tile_grid_size=(8, 8), always_apply=True),
-            # A.Resize(300, 300),
+            A.ShiftScaleRotate(
+                shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
+            ),
         ],
         bbox_params=A.BboxParams(format="yolo"),
     )
