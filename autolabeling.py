@@ -14,7 +14,7 @@ import shutil
 def mypipeline(
     video_path: str,
     image_dir_path: str,
-    frame_rate: isinstance,
+    frame_rate: int,
     ontology: Dict,
     output_images: str,
     extension: str,

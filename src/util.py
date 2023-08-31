@@ -10,6 +10,8 @@ import yaml
 from tqdm import tqdm
 import logging
 
+logging.basicConfig(level=logging.INFO)
+
 
 def video2images(
     video_path=config.VIDEO_DIR_PATH, image_dir_path=config.IMAGE_DIR_PATH, frame_rate=1
