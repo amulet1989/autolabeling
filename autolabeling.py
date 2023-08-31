@@ -172,6 +172,7 @@ def main():
             args.extension,
             args.box_threshold,
             args.text_threshold,
+            args.num_datasets,
         )
     else:
         for video_path in tqdm(video_paths):
@@ -184,6 +185,7 @@ def main():
                 args.extension,
                 args.box_threshold,
                 args.text_threshold,
+                args.num_datasets,
             )
 
     # Unir datasets
