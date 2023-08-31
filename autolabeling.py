@@ -20,6 +20,7 @@ def mypipeline(
     extension: str,
     box_threshold: float,
     text_threshold: float,
+    num_datasets: int,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -60,6 +61,7 @@ def mypipeline(
         text_threshold=text_threshold,
         output_folder=dataset_dir_path,
         extension=extension,
+        num_datasets=num_datasets,
     )
 
 
@@ -142,6 +144,9 @@ def main():
         default=4,
         type=int,
         help="Proporción en la que se aumentará el dataset",
+    )
+    parser.add_argument(
+        "--num_datasets", default=4, type=int, help="Numero de datasets"
     )
 
     args = parser.parse_args()

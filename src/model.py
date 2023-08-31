@@ -20,7 +20,7 @@ def label_multiple(
     input_folder: str,
     extension: str = ".jpg",
     output_folder: str = None,
-    num_datasets: int = 2,
+    num_datasets: int = 4,
 ) -> None:
     if output_folder is None:
         output_folder = input_folder + "_labeled"
@@ -78,6 +78,7 @@ def autolabel_images(
     text_threshold=0.25,
     output_folder=config.DATASET_DIR_PATH,
     extension=".jpg",
+    num_datasets=4,
 ):
     """
     Autolabel images in a folder.
@@ -102,5 +103,8 @@ def autolabel_images(
 
     # label all images in a folder called `context_images`
     base_model.label(
-        input_folder=input_folder, extension=extension, output_folder=output_folder
+        input_folder=input_folder,
+        extension=extension,
+        output_folder=output_folder,
+        num_datasets=num_datasets,
     )
