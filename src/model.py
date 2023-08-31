@@ -62,6 +62,12 @@ def label_multiple(
 
         split_data(output_folder + f"/{directory_name}_{i+1}")
 
+        # Liberar memoria
+        images_map.clear()
+        detections_map.clear()
+        del dataset
+        gc.collect()
+
         print(f"Labeled dataset {i+1} created - ready for distillation.")
 
 
