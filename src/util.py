@@ -89,11 +89,17 @@ def merge_datasets(dataset_paths: List, output_path: str):
     os.makedirs(merged_data["train"], exist_ok=True)
     os.makedirs(merged_data["val"], exist_ok=True)
 
-    label_counter = 0
+    label_counter = -1
+    existing_classes = []
     for dataset_path in dataset_paths:
         with open(os.path.join(dataset_path, "data.yaml"), "r") as yaml_file:
             data = yaml.safe_load(yaml_file)
             merged_data["names"].extend(data["names"])
+
+            for class_name in data["names"]:
+                if class_name not in existing_classes:
+                    existing_classes.append(class_name)
+                    label_counter += 1
 
         for class_name in data["names"]:
             for split in ["train", "valid"]:
@@ -127,7 +133,7 @@ def merge_datasets(dataset_paths: List, output_path: str):
                                         parts[0] = class_id
                                         dest_labels.write(" ".join(parts) + "\n")
 
-        label_counter += 1
+        # label_counter += 1
 
     merged_data["names"] = list(set(merged_data["names"]))
     merged_data["nc"] = len(merged_data["names"])

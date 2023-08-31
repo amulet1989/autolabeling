@@ -2,9 +2,75 @@ from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from src import config
 
+import cv2
+import supervision as sv
+from tqdm import tqdm
+import glob
+import os
+import gc
+
+from autodistill.helpers import split_data
+
+
+import numpy as np
+
+
+def label_multiple(
+    self,
+    input_folder: str,
+    extension: str = ".jpg",
+    output_folder: str = None,
+    num_datasets: int = 2,
+) -> None:
+    if output_folder is None:
+        output_folder = input_folder + "_labeled"
+
+    os.makedirs(output_folder, exist_ok=True)
+
+    directory_name = os.path.basename(os.path.normpath(input_folder))
+
+    files = glob.glob(input_folder + "/*" + extension)
+    file_chunks = np.array_split(files, num_datasets)
+
+    for i, chunk in enumerate(file_chunks):
+        images_map = {}
+        detections_map = {}
+
+        progress_bar = tqdm(chunk, desc=f"Labeling images for dataset {i+1}")
+        # iterate through images in input_folder
+        for f_path in progress_bar:
+            progress_bar.set_description(
+                desc=f"Labeling {f_path} for dataset {i+1}", refresh=True
+            )
+            image = cv2.imread(f_path)
+
+            f_path_short = os.path.basename(f_path)
+            images_map[f_path_short] = image.copy()
+            detections = self.predict(f_path)
+            detections_map[f_path_short] = detections
+
+        dataset = sv.DetectionDataset(
+            self.ontology.classes(), images_map, detections_map
+        )
+
+        dataset.as_yolo(
+            output_folder + f"/{directory_name}_{i+1}/images",
+            output_folder + f"/{directory_name}_{i+1}/annotations",
+            min_image_area_percentage=0.01,
+            data_yaml_path=output_folder + f"/{directory_name}_{i+1}/data.yaml",
+        )
+
+        split_data(output_folder + f"/{directory_name}_{i+1}")
+
+        print(f"Labeled dataset {i+1} created - ready for distillation.")
+
+
+# Modificar el método label de la clase
+GroundingDINO.label = label_multiple
 base_model = GroundingDINO(ontology=CaptionOntology({"product held by": "product"}))
 
 
+# Funcion principal
 def autolabel_images(
     input_folder=config.IMAGE_DIR_PATH,
     ontology={"hand holding": "hand", "product held by": "product"},

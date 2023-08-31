@@ -41,12 +41,13 @@ def mypipeline(
     os.mkdir(image_dir_path)  # y lo Crea el directorio nuevamente
 
     # create dataset folder for each video folder
-    dataset_dir_path = os.path.join(output_images, os.path.basename(video_path))
-    if os.path.exists(dataset_dir_path):
-        shutil.rmtree(
-            dataset_dir_path
-        )  # Si ya existe borra el directorio y su contenido
-    os.mkdir(dataset_dir_path)  # y lo crea el directorio nuevamente
+    dataset_dir_path = output_images
+    # dataset_dir_path = os.path.join(output_images, os.path.basename(video_path))
+    # if os.path.exists(dataset_dir_path):
+    #    shutil.rmtree(
+    #        dataset_dir_path
+    #    )  # Si ya existe borra el directorio y su contenido
+    # os.mkdir(dataset_dir_path)  # y lo crea el directorio nuevamente
 
     # convert video to images
     video2images(video_path, image_dir_path, frame_rate)
