@@ -54,10 +54,12 @@ def label_multiple(
         )
 
         dataset.as_yolo(
-            output_folder + f"/{directory_name}_{i+1}/images",
-            output_folder + f"/{directory_name}_{i+1}/annotations",
+            os.path.join(output_folder, f"{directory_name}_{i+1}", "images"),
+            os.path.join(output_folder, f"{directory_name}_{i+1}", "annotations"),
             min_image_area_percentage=0.01,
-            data_yaml_path=output_folder + f"/{directory_name}_{i+1}/data.yaml",
+            data_yaml_path=os.path.join(
+                output_folder, f"{directory_name}_{i+1}", "data.yaml"
+            ),
         )
 
         split_data(output_folder + f"/{directory_name}_{i+1}")

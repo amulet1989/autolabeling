@@ -150,12 +150,20 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
             os.path.join(inp_lab_pth_valid, file),
             os.path.join(out_lab_pth_valid, file),
         )
-    logging.info("Coping data.yaml ...")
-    # copy data.yaml to output folder
-    shutil.copy(
-        os.path.join(input_path, "data.yaml"),
-        os.path.join(output_path, "data.yaml"),
-    )
+
+    logging.info("Transforming data.yaml ...")
+    # Abrir el archivo YAML
+    with open(os.path.join(input_path, "data.yaml"), "r") as file:
+        # Cargar el contenido del archivo en una variable
+        data = yaml.load(file, Loader=yaml.FullLoader)
+
+    # Actualizar los valores de las claves "train" y "val"
+    data["train"] = os.path.join(output_path, "train", "images")
+    data["val"] = os.path.join(output_path, "val", "images")
+
+    # Guardar el archivo YAML actualizado
+    with open(os.path.join(output_path, "data.yaml"), "w") as file:
+        yaml.dump(data, file)
 
     transformed_file_name = "aug"
 
