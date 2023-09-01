@@ -100,25 +100,7 @@ def autolabel_images(
         extension (str, optional): Extension of the images. Defaults to ".jpg".
         num_datasets (int, optional): Number of datasets to split the images. Defaults to 4.
     """
-    # create the ontology
-    ontology = CaptionOntology(ontology)
 
-    # base_model = GroundingDINO(
-    #    ontology=ontology, box_threshold=box_threshold, text_threshold=text_threshold
-    # )
-    base_model.ontology = ontology
-    base_model.box_threshold = box_threshold
-    base_model.text_threshold = text_threshold
-
-    # label all images in a folder called `context_images`
-    base_model.label(
-        input_folder=input_folder,
-        extension=extension,
-        output_folder=output_folder,
-        num_datasets=num_datasets,
-    )
-    print("Labeled images created - ready for distillation.")
-    """
     # create the ontology
     ontology = CaptionOntology(ontology)
 
