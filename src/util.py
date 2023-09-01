@@ -4,11 +4,14 @@ import os
 from typing import List
 import shutil
 import yaml
+import cv2
 
 # from typing import Dict
 # import time
 from tqdm import tqdm
 import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
 def video2images(
@@ -41,7 +44,8 @@ def video2images(
             for image in sv.get_video_frames_generator(
                 source_path=str(out_video_path), stride=frame_rate
             ):
-                sink.save_image(image=image)
+                resized_image = cv2.resize(image, (640, 480))  # Resize image
+                sink.save_image(image=resized_image)
                 cont += 1
     logging.info(f"Obtained  {cont} images.")
 
