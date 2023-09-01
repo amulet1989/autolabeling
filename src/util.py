@@ -44,8 +44,8 @@ def video2images(
             for image in sv.get_video_frames_generator(
                 source_path=str(out_video_path), stride=frame_rate
             ):
-                resized_image = cv2.resize(image, (640, 480))  # Resize image
-                sink.save_image(image=resized_image)
+                # resized_image = cv2.resize(image, (640, 480))  # Resize image
+                sink.save_image(image=image)
                 cont += 1
     logging.info(f"Obtained  {cont} images.")
 
