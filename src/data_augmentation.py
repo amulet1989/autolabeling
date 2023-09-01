@@ -83,12 +83,7 @@ def get_bboxes_list(inp_lab_pth, classes):
 def apply_aug(image, bboxes, out_lab_pth, out_img_pth, transformed_file_name, classes):
     transform = A.Compose(
         [
-            A.Resize(
-                always_apply=True,
-                p=1.0,
-                height=480,
-                width=640,
-            ),
+            # A.Resize(always_apply=True,p=1.0,height=480,width=640,),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.5),

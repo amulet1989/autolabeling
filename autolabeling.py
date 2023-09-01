@@ -21,6 +21,8 @@ def mypipeline(
     box_threshold: float,
     text_threshold: float,
     num_datasets: int,
+    height: int = None,
+    width: int = None,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -51,7 +53,7 @@ def mypipeline(
     # os.mkdir(dataset_dir_path)  # y lo crea el directorio nuevamente
 
     # convert video to images
-    video2images(video_path, image_dir_path, frame_rate)
+    video2images(video_path, image_dir_path, frame_rate, height, width)
 
     # 2- Run autolabel for each image in image_dir_path
     autolabel_images(
@@ -148,6 +150,12 @@ def main():
     parser.add_argument(
         "--num_datasets", default=4, type=int, help="Numero de datasets"
     )
+    parser.add_argument(
+        "--height", default=None, type=int, help="Altura para resize de las imagenes"
+    )
+    parser.add_argument(
+        "--width", default=None, type=int, help="Ancho para resize de las imagenes"
+    )
 
     args = parser.parse_args()
 
@@ -185,6 +193,8 @@ def main():
             args.box_threshold,
             args.text_threshold,
             args.num_datasets,
+            args.height,
+            args.width,
         )
     else:
         for video_path in tqdm(video_paths):
@@ -198,6 +208,8 @@ def main():
                 args.box_threshold,
                 args.text_threshold,
                 args.num_datasets,
+                args.height,
+                args.width,
             )
 
     # Unir datasets
