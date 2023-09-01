@@ -111,7 +111,7 @@ def main():
     )
     parser.add_argument(
         "--iou_threshold",
-        default=0.1,
+        default=0.4,
         type=float,
         help="IoU maxima permitaida de dos BBox",
     )
@@ -152,9 +152,9 @@ def main():
     args = parser.parse_args()
 
     # Run pipeline
-    # 1- Convert videos to images
-    # 2- Run autolabel for each image
-    # 3- Union de los Datasets
+    # 1- Convertir videos a images
+    # 2- Run autolabel para cada imagen (se genera un dataset por producto)
+    # 3- Union de los Datasets de todos los productos (merged dataset)
     # 4- Procesar Merged_Dataset/train para eliminar errores de anotación
     # 5- Procesar Merged_Dataset/valid para eliminar errores de anotación
     # 6- Generar la aumentación de datos
@@ -205,7 +205,7 @@ def main():
     output_path = os.path.join(args.output_dataset, "Merged_Dataset")
     if os.path.exists(output_path):
         shutil.rmtree(output_path)  # Si ya existe Borra el directorio y su contenido
-    # Nombre de carpeta de cada datatset individual
+    # Nombre de carpeta de cada datatset individuali
     folders = os.listdir(args.output_dataset)
     # Lista de paths de cada dataset individual
     dataset_paths = [os.path.join(args.output_dataset, folder) for folder in folders]

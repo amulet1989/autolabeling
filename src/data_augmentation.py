@@ -85,7 +85,7 @@ def apply_aug(image, bboxes, out_lab_pth, out_img_pth, transformed_file_name, cl
         [
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=-1),
+            A.RandomBrightnessContrast(p=0.5),
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0),
             A.CLAHE(clip_limit=(0, 1), tile_grid_size=(8, 8), always_apply=True),
             A.ShiftScaleRotate(
