@@ -15,7 +15,11 @@ logging.basicConfig(level=logging.INFO)
 
 
 def video2images(
-    video_path=config.VIDEO_DIR_PATH, image_dir_path=config.IMAGE_DIR_PATH, frame_rate=1
+    video_path=config.VIDEO_DIR_PATH,
+    image_dir_path=config.IMAGE_DIR_PATH,
+    frame_rate=1,
+    height=None,
+    width=None,
 ) -> None:
     """
     Convert a video to images.
@@ -24,6 +28,9 @@ def video2images(
         video_path (str): Path to the video.
         image_dir_path (str): Path to the directory to save the images.
         frame_rate (int, optional): Frame rate of the video. Defaults to 1.
+        heigth (int, optional): Higth to resize input frames. Defaults to None.
+        width (int, optional): Width to resize input frames. Defaults to None.
+
     """
     # Get all videos paths in the directory
 
@@ -44,7 +51,9 @@ def video2images(
             for image in sv.get_video_frames_generator(
                 source_path=str(out_video_path), stride=frame_rate
             ):
-                # resized_image = cv2.resize(image, (640, 480))  # Resize image
+                if height is not None and width is not None:
+                    image = cv2.resize(image, (width, height))
+
                 sink.save_image(image=image)
                 cont += 1
     logging.info(f"Obtained  {cont} images.")
