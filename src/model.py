@@ -1,5 +1,7 @@
 from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
+from autodistill.helpers import split_data
+
 from src import config
 
 import cv2
@@ -8,8 +10,6 @@ from tqdm import tqdm
 import glob
 import os
 import gc
-
-from autodistill.helpers import split_data
 
 
 import numpy as np

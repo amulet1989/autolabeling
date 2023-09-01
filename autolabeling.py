@@ -92,10 +92,10 @@ def main():
     )
 
     parser.add_argument(
-        "--output_images",
+        "--output_dataset",
         default=config.DATASET_DIR_PATH,
         type=str,
-        help="Carpeta de salida para imágenes procesadas",
+        help="Carpeta de salida para el dataset de imagenes anotadas",
     )
     parser.add_argument(
         "--extension", default=".jpg", type=str, help="Extensión de archivo"
@@ -155,9 +155,21 @@ def main():
     # 1- Convert videos to images
     # 2- Run autolabel for each image
     # 3- Union de los Datasets
+    # 4- Procesar Merged_Dataset/train para eliminar errores de anotación
+    # 5- Procesar Merged_Dataset/valid para eliminar errores de anotación
+    # 6- Generar la aumentación de datos
 
-    # get all folders into video_dir
+    # Obtener las rutas de las carpetas de videos
     video_paths = get_video_folder_paths(args.video)
+
+    # Crear directorio de salida para imágenes
+    if not os.path.exists(args.image_dir):
+        os.makedirs(args.image_dir)
+
+    # Crear directorio de salida para dataset
+    if not os.path.exists(args.output_dataset):
+        os.makedirs(args.output_dataset)
+
     # run autolabels
     if len(video_paths) == 0:
         print("No se encontraron videos")
@@ -168,7 +180,7 @@ def main():
             args.image_dir,
             args.frame_rate,
             json.load(open(os.path.join(video_paths[0], "ontology.json"))),
-            args.output_images,
+            args.output_dataset,
             args.extension,
             args.box_threshold,
             args.text_threshold,
@@ -181,7 +193,7 @@ def main():
                 args.image_dir,
                 args.frame_rate,
                 json.load(open(os.path.join(video_path, "ontology.json"))),
-                args.output_images,
+                args.output_dataset,
                 args.extension,
                 args.box_threshold,
                 args.text_threshold,
@@ -190,13 +202,13 @@ def main():
 
     # Unir datasets
     # Si existe la carpeta Merged_Dataset Borra el directorio y su contenido
-    output_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
+    output_path = os.path.join(args.output_dataset, "Merged_Dataset")
     if os.path.exists(output_path):
         shutil.rmtree(output_path)  # Si ya existe Borra el directorio y su contenido
     # Nombre de carpeta de cada datatset individual
-    folders = os.listdir(args.output_images)
+    folders = os.listdir(args.output_dataset)
     # Lista de paths de cada dataset individual
-    dataset_paths = [os.path.join(args.output_images, folder) for folder in folders]
+    dataset_paths = [os.path.join(args.output_dataset, folder) for folder in folders]
     # Hacer el merge
     merge_datasets(dataset_paths, output_path)
 
@@ -224,8 +236,8 @@ def main():
     )
 
     # Generar la aumentación de datos
-    dataset_path = os.path.join(config.DATASET_DIR_PATH, "Merged_Dataset")
-    augmented_dataset_path = os.path.join(config.DATASET_DIR_PATH, "Augmented_Dataset")
+    dataset_path = os.path.join(args.output_dataset, "Merged_Dataset")
+    augmented_dataset_path = os.path.join(args.output_dataset, "Augmented_Dataset")
     # creating aumented datased directory
     if not os.path.exists(augmented_dataset_path):
         os.makedirs(augmented_dataset_path)
@@ -234,7 +246,7 @@ def main():
         dataset_path, augmented_dataset_path, augmented_for=args.augmented_for
     )
 
-    print("Proceso finalizado")
+    print("Process ended")
 
 
 if __name__ == "__main__":
