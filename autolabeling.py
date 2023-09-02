@@ -118,29 +118,30 @@ def main():
         help="IoU maxima permitaida de dos BBox",
     )
     parser.add_argument(
-        "--remove_empty",
-        default=True,
-        type=bool,
-        help="Eliminar imagenes sin BBox detectados",
-    )
-    parser.add_argument(
         "--remove_large",
         default=True,
-        type=bool,
+        action="store_false",
         help="Eliminar BBox demasiado grandes",
     )
     parser.add_argument(
         "--remove_overlapping",
         default=True,
-        type=bool,
+        action="store_false",
         help="Si hay BBox que se superpongan dejar solo uno",
+    )
+    parser.add_argument(
+        "--remove_empty",
+        default=True,
+        action="store_false",
+        help="Eliminar imágenes sin BBox detectados",
     )
     parser.add_argument(
         "--remove_multiple",
         default=True,
-        type=bool,
-        help="Si queda mas de un objeto detectado eliminar imagen",
+        action="store_false",
+        help="Si queda más de un objeto detectado eliminar imagen",
     )
+
     parser.add_argument(
         "--augmented_for",
         default=4,

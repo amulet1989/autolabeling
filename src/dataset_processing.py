@@ -68,8 +68,8 @@ def iou(bbox1, bbox2):
 def run_processing_dataset(
     image_dir: str,
     label_dir: str,
-    max_size: float = 0.2,
-    iou_threshold: float = 0.1,
+    max_size: float = 0.5,
+    iou_threshold: float = 0.4,
     remove_empty: bool = True,
     remove_large: bool = True,
     remove_overlapping: bool = True,
@@ -111,7 +111,10 @@ def run_processing_dataset(
     """
     if remove_large and max_size is not None:
         remove_large_bboxes(label_dir, max_size)
+        print("removed large")
     if remove_overlapping:
         remove_overlapping_bboxes(label_dir, iou_threshold)
+        print("removed overlaping")
     if remove_empty:
         remove_empty_labels(image_dir, label_dir, remove_multiple=remove_multiple)
+        print("removed empty")
