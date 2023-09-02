@@ -118,25 +118,25 @@ def main():
         help="IoU maxima permitaida de dos BBox",
     )
     parser.add_argument(
-        "--remove_large",
+        "--not_remove_large",
         default=True,
         action="store_false",
         help="Eliminar BBox demasiado grandes",
     )
     parser.add_argument(
-        "--remove_overlapping",
+        "--not_remove_overlapping",
         default=True,
         action="store_false",
         help="Si hay BBox que se superpongan dejar solo uno",
     )
     parser.add_argument(
-        "--remove_empty",
+        "--not_remove_empty",
         default=True,
         action="store_false",
         help="Eliminar imágenes sin BBox detectados",
     )
     parser.add_argument(
-        "--remove_multiple",
+        "--not_remove_multiple",
         default=True,
         action="store_false",
         help="Si queda más de un objeto detectado eliminar imagen",
@@ -231,10 +231,10 @@ def main():
         os.path.join(output_path, "train", "labels"),
         max_size=args.max_size,
         iou_threshold=args.iou_threshold,
-        remove_empty=args.remove_empty,
-        remove_large=args.remove_large,
-        remove_overlapping=args.remove_overlapping,
-        remove_multiple=args.remove_multiple,
+        remove_empty=args.not_remove_empty,
+        remove_large=args.not_remove_large,
+        remove_overlapping=args.not_remove_overlapping,
+        remove_multiple=args.not_remove_multiple,
     )
     # Procesar Merged_Dataset/valid para eliminar errores de anotación
     run_processing_dataset(
@@ -242,10 +242,10 @@ def main():
         os.path.join(output_path, "valid", "labels"),
         max_size=args.max_size,
         iou_threshold=args.iou_threshold,
-        remove_empty=args.remove_empty,
-        remove_large=args.remove_large,
-        remove_overlapping=args.remove_overlapping,
-        remove_multiple=args.remove_multiple,
+        remove_empty=args.not_remove_empty,
+        remove_large=args.not_remove_large,
+        remove_overlapping=args.not_remove_overlapping,
+        remove_multiple=args.not_remove_multiple,
     )
 
     # Generar la aumentación de datos
