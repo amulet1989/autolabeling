@@ -80,26 +80,41 @@ def get_bboxes_list(inp_lab_pth, classes):
     return album_bb_lists
 
 
-def apply_aug(image, bboxes, out_lab_pth, out_img_pth, transformed_file_name, classes):
-    transform = A.Compose(
-        [
-            A.Resize(
-                always_apply=True,
-                p=1.0,
-                height=480,
-                width=640,
-            ),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.5),
-            A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0),
-            A.CLAHE(clip_limit=(0, 1), tile_grid_size=(8, 8), always_apply=True),
-            A.ShiftScaleRotate(
-                shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
-            ),
-        ],
-        bbox_params=A.BboxParams(format="yolo"),
-    )
+def apply_aug(
+    image, bboxes, out_lab_pth, out_img_pth, transformed_file_name, classes, val=False
+):
+    if val:
+        transform = A.Compose(
+            [
+                A.Resize(
+                    always_apply=True,
+                    p=1.0,
+                    height=480,
+                    width=640,
+                ),
+            ],
+            bbox_params=A.BboxParams(format="yolo"),
+        )
+    else:
+        transform = A.Compose(
+            [
+                A.Resize(
+                    always_apply=True,
+                    p=1.0,
+                    height=480,
+                    width=640,
+                ),
+                A.HorizontalFlip(p=0.5),
+                A.VerticalFlip(p=0.5),
+                A.RandomBrightnessContrast(p=0.5),
+                A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0),
+                A.CLAHE(clip_limit=(0, 1), tile_grid_size=(8, 8), always_apply=True),
+                A.ShiftScaleRotate(
+                    shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
+                ),
+            ],
+            bbox_params=A.BboxParams(format="yolo"),
+        )
     transformed = transform(image=image, bboxes=bboxes)
     transformed_image = transformed["image"]
     transformed_bboxes = transformed["bboxes"]
@@ -145,17 +160,17 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
         os.makedirs(out_lab_pth_valid)
 
     # Copy valid dataset to output folder
-    logging.info("Coping valid dataset ...")
-    for file in os.listdir(inp_img_pth_valid):
-        shutil.copy(
-            os.path.join(inp_img_pth_valid, file),
-            os.path.join(out_img_pth_valid, file),
-        )
-    for file in os.listdir(inp_lab_pth_valid):
-        shutil.copy(
-            os.path.join(inp_lab_pth_valid, file),
-            os.path.join(out_lab_pth_valid, file),
-        )
+    # logging.info("Coping valid dataset ...")
+    # for file in os.listdir(inp_img_pth_valid):
+    #    shutil.copy(
+    #        os.path.join(inp_img_pth_valid, file),
+    #        os.path.join(out_img_pth_valid, file),
+    #    )
+    # for file in os.listdir(inp_lab_pth_valid):
+    #    shutil.copy(
+    #        os.path.join(inp_lab_pth_valid, file),
+    #        os.path.join(out_lab_pth_valid, file),
+    #    )
 
     logging.info("Transforming data.yaml ...")
     # Abrir el archivo YAML
@@ -178,8 +193,9 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
 
     CLASSES = data["names"]
 
+    # Aumentando datos de train
     imgs = os.listdir(inp_img_pth)
-    logging.info("Generating augmented images ...")
+    logging.info("Generating train augmented images ...")
     for img_file in tqdm(imgs):
         file_name = img_file.split(".")[0]
         image = cv2.imread(os.path.join(inp_img_pth, img_file))
@@ -191,4 +207,25 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
             apply_aug(
                 image, album_bboxes, out_lab_pth, out_img_pth, aug_file_name, CLASSES
             )
+    logging.info("Data train augmentation ended ...")
+
+    # Transformando datos de validación (no aumenta solo rescala)
+    imgs = os.listdir(inp_img_pth_valid)
+    logging.info("Addjusting validation data  ...")
+    for img_file in tqdm(imgs):
+        file_name = img_file.split(".")[0]
+        image = cv2.imread(os.path.join(inp_img_pth_valid, img_file))
+        lab_pth = os.path.join(inp_lab_pth_valid, file_name + ".txt")
+        album_bboxes = get_bboxes_list(lab_pth, CLASSES)
+
+        aug_file_name = f"{file_name}_{transformed_file_name}"
+        apply_aug(
+            image,
+            album_bboxes,
+            out_lab_pth_valid,
+            out_img_pth_valid,
+            aug_file_name,
+            CLASSES,
+            val=True,
+        )
     logging.info("Data augmentation ended ...")
