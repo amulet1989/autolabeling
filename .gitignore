@@ -175,3 +175,5 @@ videos/
 dataset/
 images/
 test/
+runs/
+*.pt
