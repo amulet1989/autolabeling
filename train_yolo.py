@@ -40,7 +40,7 @@ def main():
         data=args.data_yaml,
         epochs=args.epochs,
         batch=args.batch,
-        device=0,
+        # device=0,
         # workers=8,
         # optimizer="Adam",
         # imgsz=640,
