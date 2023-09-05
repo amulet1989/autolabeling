@@ -177,3 +177,4 @@ images/
 test/
 runs/
 *.pt
+*.ipynb
