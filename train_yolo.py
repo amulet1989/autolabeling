@@ -26,7 +26,7 @@ def main():
     # Train the model
     model.train(
         data=args.data_yaml,
-        epochs=300,
+        epochs=30,
         batch=-1,
         device=0,
         # workers=8,
