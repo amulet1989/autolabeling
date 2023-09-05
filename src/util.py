@@ -93,6 +93,7 @@ def merge_datasets(dataset_paths: List, output_path: str):
         dataset_paths (list): List of paths to the datasets.
         output_path (str): Path to the output directory.
     """
+    logging.info("Merging datasets...")
     merged_data = {
         "names": [],
         "nc": 0,
@@ -105,7 +106,7 @@ def merge_datasets(dataset_paths: List, output_path: str):
 
     label_counter = -1
     existing_classes = []
-    for dataset_path in dataset_paths:
+    for dataset_path in tqdm(dataset_paths):
         with open(os.path.join(dataset_path, "data.yaml"), "r") as yaml_file:
             data = yaml.safe_load(yaml_file)
             merged_data["names"].extend(data["names"])
@@ -154,6 +155,7 @@ def merge_datasets(dataset_paths: List, output_path: str):
 
     with open(os.path.join(output_path, "data.yaml"), "w") as output_yaml:
         yaml.dump(merged_data, output_yaml, default_flow_style=False)
+    logging.info(f"Merged datasets created at {output_path}")
 
 
 def seleccionar_imagen():
