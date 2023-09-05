@@ -6,8 +6,9 @@ import shutil
 import yaml
 import cv2
 
-# from typing import Dict
-# import time
+import tkinter as tk
+from tkinter import filedialog
+
 from tqdm import tqdm
 import logging
 
@@ -153,3 +154,23 @@ def merge_datasets(dataset_paths: List, output_path: str):
 
     with open(os.path.join(output_path, "data.yaml"), "w") as output_yaml:
         yaml.dump(merged_data, output_yaml, default_flow_style=False)
+
+
+def seleccionar_imagen():
+    root = tk.Tk()
+    root.withdraw()  # Oculta la ventana principal de tkinter
+
+    file_path = filedialog.askopenfilename(
+        title="Seleccionar una imagen",
+        filetypes=[
+            (
+                "Archivos de imagen",
+                "*.jpg *.jpeg *.png *.gif *.bmp *.ppm *.pgm *.tif *.tiff",
+            )
+        ],
+    )
+
+    if file_path:
+        return file_path
+    else:
+        return None
