@@ -29,9 +29,10 @@ def main():
         epochs=300,
         batch=-1,
         device=0,
-        workers=8,
-        optimizer="Adam",
-        imgsz=640,
+        # workers=8,
+        # optimizer="Adam",
+        # imgsz=640,
+        pretrained=True,
     )
 
     # pred = model.predict(
