@@ -21,14 +21,26 @@ def main():
         type=str,
         help="Ruta al archivo de data_yaml",
     )
+    parser.add_argument(
+        "--epochs",
+        default=50,
+        type=int,
+        help="Numero de epocas a entrenar",
+    )
+    parser.add_argument(
+        "--batch",
+        default=-1,
+        type=int,
+        help="Batch size",
+    )
     args = parser.parse_args()
 
     # Train the model
     model.train(
         data=args.data_yaml,
-        epochs=30,
-        batch=-1,
-        # device=0,
+        epochs=args.epochs,
+        batch=args.batch,
+        device=0,
         # workers=8,
         # optimizer="Adam",
         # imgsz=640,

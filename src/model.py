@@ -118,3 +118,43 @@ def autolabel_images(
         output_folder=output_folder,
         num_datasets=num_datasets,
     )
+
+
+def predict_and_visualice(
+    image_path,
+    ontology,
+    box_threshold=0.35,
+    text_threshold=0.25,
+):
+    """
+    Predict and visualize the image.
+
+    Args:
+        image_path (str): Path to the image.
+        ontology (Dict[str, str]): Ontology of the captions.
+        box_threshold (float, optional): Box threshold. Defaults to 0.35.
+        text_threshold (float, optional): Text threshold. Defaults to 0.25.
+
+    Returns:
+        result (sv.DetectionResult): Detection result.
+
+    """
+    image = cv2.imread(image_path)
+    ontology = CaptionOntology(ontology)
+    base_model.ontology = ontology
+    base_model.box_threshold = box_threshold
+    base_model.text_threshold = text_threshold
+
+    result = base_model.predict(image_path)
+
+    box_annotator = sv.BoxAnnotator()
+
+    labels = [
+        f"{base_model.ontology.classes()[class_id]} {confidence:.2f}"
+        for class_id, confidence in zip(result.class_id, result.confidence)
+    ]
+    annotated_image = box_annotator.annotate(
+        image.copy(), detections=result, labels=labels
+    )
+
+    sv.plot_image(image=annotated_image, size=(8, 8))

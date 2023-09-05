@@ -180,7 +180,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
 
     # Actualizar los valores de las claves "train" y "val"
     data["train"] = os.path.join(output_path, "train", "images")
-    data["val"] = os.path.join(output_path, "val", "images")
+    data["val"] = os.path.join(output_path, "valid", "images")
 
     # Guardar el archivo YAML actualizado
     with open(os.path.join(output_path, "data.yaml"), "w") as file:
