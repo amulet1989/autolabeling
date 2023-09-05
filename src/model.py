@@ -157,4 +157,4 @@ def predict_and_visualice(
         image.copy(), detections=result, labels=labels
     )
 
-    sv.plot_image(image=annotated_image, size=(8, 8))
+    sv.plot_image(image=annotated_image, size=(16, 10))
