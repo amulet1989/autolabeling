@@ -8,7 +8,7 @@ from src import config
 # )
 
 # Create a YOLOv5 object
-model = YOLO("yolov5su.pt")
+model = YOLO("yolov5s.pt")
 
 
 def main():
@@ -28,7 +28,7 @@ def main():
         data=args.data_yaml,
         epochs=30,
         batch=-1,
-        device=0,
+        # device=0,
         # workers=8,
         # optimizer="Adam",
         # imgsz=640,
