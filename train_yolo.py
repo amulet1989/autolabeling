@@ -33,6 +33,12 @@ def main():
         type=int,
         help="Batch size",
     )
+    parser.add_argument(
+        "--device",
+        default=None,
+        type=str,
+        help="Batch size",
+    )
     args = parser.parse_args()
 
     # Train the model
@@ -40,10 +46,7 @@ def main():
         data=args.data_yaml,
         epochs=args.epochs,
         batch=args.batch,
-        # device=0,
-        # workers=8,
-        # optimizer="Adam",
-        # imgsz=640,
+        device=args.device,
         pretrained=True,
     )
 
