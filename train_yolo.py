@@ -8,7 +8,7 @@ from src import config
 # )
 
 # Create a YOLOv5 object
-model = YOLO("yolov5s.pt")
+model = YOLO("yolov5su.pt")
 
 
 def main():
