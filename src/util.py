@@ -85,6 +85,14 @@ def get_video_folder_paths(directory: str) -> List:
         return folder_paths
 
 
+import os
+import shutil
+import logging
+from typing import List
+from tqdm import tqdm
+import yaml
+
+
 def merge_datasets(dataset_paths: List, output_path: str):
     """
     Merge datasets.
@@ -104,17 +112,19 @@ def merge_datasets(dataset_paths: List, output_path: str):
     os.makedirs(merged_data["train"], exist_ok=True)
     os.makedirs(merged_data["val"], exist_ok=True)
 
-    label_counter = -1
-    existing_classes = []
+    # Inicializar el mapeo entre class_id y los valores de data["names"]
+    class_id_mapping = {}
+
     for dataset_path in tqdm(dataset_paths):
         with open(os.path.join(dataset_path, "data.yaml"), "r") as yaml_file:
             data = yaml.safe_load(yaml_file)
             merged_data["names"].extend(data["names"])
 
             for class_name in data["names"]:
-                if class_name not in existing_classes:
-                    existing_classes.append(class_name)
-                    label_counter += 1
+                if class_name not in class_id_mapping:
+                    # Asigna un nuevo class_id basado en el mapeo actual
+                    class_id = len(class_id_mapping)
+                    class_id_mapping[class_name] = class_id
 
         for class_name in data["names"]:
             for split in ["train", "valid"]:
@@ -144,17 +154,19 @@ def merge_datasets(dataset_paths: List, output_path: str):
                                 for line in src_labels:
                                     parts = line.strip().split()
                                     if len(parts) >= 5:
-                                        class_id = str(label_counter)
-                                        parts[0] = class_id
+                                        class_id = parts[0]
+                                        class_id = class_id_mapping[class_name]
+                                        parts[0] = str(class_id)
                                         dest_labels.write(" ".join(parts) + "\n")
 
-        # label_counter += 1
-
+    # Actualizar la información del conjunto de datos fusionado
     merged_data["names"] = list(set(merged_data["names"]))
     merged_data["nc"] = len(merged_data["names"])
 
+    # Guardar metadatos en un archivo data.yaml
     with open(os.path.join(output_path, "data.yaml"), "w") as output_yaml:
         yaml.dump(merged_data, output_yaml, default_flow_style=False)
+
     logging.info(f"Merged datasets created at {output_path}")
 
 
