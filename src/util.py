@@ -154,14 +154,26 @@ def merge_datasets(dataset_paths: List, output_path: str):
                                 for line in src_labels:
                                     parts = line.strip().split()
                                     if len(parts) >= 5:
-                                        class_id = parts[0]
                                         class_id = class_id_mapping[class_name]
                                         parts[0] = str(class_id)
                                         dest_labels.write(" ".join(parts) + "\n")
 
     # Actualizar la información del conjunto de datos fusionado
-    merged_data["names"] = list(set(merged_data["names"]))
+    print(merged_data["names"])
+    # merged_data["names"] = list(set(merged_data["names"]))
+
+    seen = set()
+    unique_names = []
+
+    for name in merged_data["names"]:
+        if name not in seen:
+            unique_names.append(name)
+            seen.add(name)
+
+    merged_data["names"] = unique_names
+
     merged_data["nc"] = len(merged_data["names"])
+    print(merged_data["names"])
 
     # Guardar metadatos en un archivo data.yaml
     with open(os.path.join(output_path, "data.yaml"), "w") as output_yaml:
@@ -180,6 +192,26 @@ def seleccionar_imagen():
             (
                 "Archivos de imagen",
                 "*.jpg *.jpeg *.png *.gif *.bmp *.ppm *.pgm *.tif *.tiff",
+            )
+        ],
+    )
+
+    if file_path:
+        return file_path
+    else:
+        return None
+
+
+def seleccionar_video():
+    root = tk.Tk()
+    root.withdraw()  # Oculta la ventana principal de tkinter
+
+    file_path = filedialog.askopenfilename(
+        title="Seleccionar una imagen",
+        filetypes=[
+            (
+                "Archivos de video",
+                "*.mp4 *.avi *.mkv *.mov",
             )
         ],
     )
