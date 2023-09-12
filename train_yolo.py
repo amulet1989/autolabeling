@@ -47,7 +47,7 @@ def main():
         epochs=args.epochs,
         batch=args.batch,
         device=args.device,
-        pretrained=True,
+        pretrained=False,
     )
 
     # pred = model.predict(
