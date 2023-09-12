@@ -159,9 +159,9 @@ def merge_datasets(dataset_paths: List, output_path: str):
                                         dest_labels.write(" ".join(parts) + "\n")
 
     # Actualizar la información del conjunto de datos fusionado
-    print(merged_data['names'])
-    #merged_data["names"] = list(set(merged_data["names"]))
-    
+    print(merged_data["names"])
+    # merged_data["names"] = list(set(merged_data["names"]))
+
     seen = set()
     unique_names = []
 
@@ -173,7 +173,7 @@ def merge_datasets(dataset_paths: List, output_path: str):
     merged_data["names"] = unique_names
 
     merged_data["nc"] = len(merged_data["names"])
-    print(merged_data['names'])
+    print(merged_data["names"])
 
     # Guardar metadatos en un archivo data.yaml
     with open(os.path.join(output_path, "data.yaml"), "w") as output_yaml:
@@ -192,6 +192,26 @@ def seleccionar_imagen():
             (
                 "Archivos de imagen",
                 "*.jpg *.jpeg *.png *.gif *.bmp *.ppm *.pgm *.tif *.tiff",
+            )
+        ],
+    )
+
+    if file_path:
+        return file_path
+    else:
+        return None
+
+
+def seleccionar_video():
+    root = tk.Tk()
+    root.withdraw()  # Oculta la ventana principal de tkinter
+
+    file_path = filedialog.askopenfilename(
+        title="Seleccionar una imagen",
+        filetypes=[
+            (
+                "Archivos de video",
+                "*.mp4 *.avi *.mkv *.mov",
             )
         ],
     )
