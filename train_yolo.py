@@ -53,11 +53,6 @@ def main():
         # resume=True,
     )
 
-    # pred = model.predict(
-    #    source="D:/Alexander/Go2Future/Autolabel_roboflow/dataset/Augmented_Dataset/train/images/7790040133487_vertical_1-00000_aug_0.jpg",
-    #    conf=0.25,
-    # )
-
 
 if __name__ == "__main__":
     main()
