@@ -8,7 +8,8 @@ from src import config
 # )
 
 # Create a YOLOv5 object
-model = YOLO("yolov5su.pt")
+# model = YOLO("yolov5su.pt")
+model = YOLO("best.pt")
 
 
 def main():
@@ -47,7 +48,10 @@ def main():
         epochs=args.epochs,
         batch=args.batch,
         device=args.device,
-        pretrained=False,
+        pretrained=True,
+        optimizer="AdamW",
+        cos_lr=True,
+        #resume=True,
     )
 
     # pred = model.predict(

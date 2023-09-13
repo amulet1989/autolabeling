@@ -23,9 +23,11 @@ for r in results:
 
     image = r.orig_img.copy()
     if boxes.cls.numel() > 0:
-        classe = boxes.cls
+        classe = boxes.cls.tolist()
         label = r.names
-        scores = boxes.conf  # Confidence scores
+        scores = boxes.conf.tolist()  # Confidence scores
+
+        print(classe, label[2], "score: ", scores)
 
         # Draw BBoxes on the image
         # for box, label, score in zip(boxes, labels, scores):
@@ -36,7 +38,8 @@ for r in results:
 
             cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
 
-            text = f"{label[i]} ({scores[i]:.2f})"
+            text = f"{label[int(classe[i])]} ({scores[int(classe[i])]:.2f})"
+            print(i, " : ", text)
             cv2.putText(
                 image,
                 text,
