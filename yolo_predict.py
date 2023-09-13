@@ -16,7 +16,7 @@ cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
 
 results = model(
-    source=INPUT_VIDEO, stream=True, save=False, conf=0.8
+    source=INPUT_VIDEO, stream=True, save=True, conf=0.8, imgsz=640
 )  # generator of Results objects
 
 for r in results:
