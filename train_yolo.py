@@ -49,8 +49,8 @@ def main():
         batch=args.batch,
         device=args.device,
         pretrained=True,
-        optimizer="AdamW",
-        cos_lr=True,
+        #optimizer="AdamW",
+        #cos_lr=True,
         #resume=True,
     )
 

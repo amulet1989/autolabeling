@@ -6,8 +6,8 @@ from src.util import seleccionar_video
 model = YOLO("best.pt")
 
 # Create VideoCapture object
-#INPUT_VIDEO = seleccionar_video()
-INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.75"
+INPUT_VIDEO = seleccionar_video()
+#INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.75"
 
 # Read video
 cap = cv2.VideoCapture(INPUT_VIDEO)
