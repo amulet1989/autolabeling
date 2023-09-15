@@ -1,9 +1,11 @@
 import cv2
-from ultralytics import YOLO
+from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-model = YOLO("best.pt")
+# model = YOLO("yolov8s.pt")
+model = RTDETR("rtdetr-x.pt")  # rtdetr-l.pt
+
 
 # Create VideoCapture object
 INPUT_VIDEO = seleccionar_video()
@@ -14,9 +16,9 @@ cap = cv2.VideoCapture(INPUT_VIDEO)
 win_name = "Camera Preview"
 cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
-
+classes = 0
 results = model(
-    source=INPUT_VIDEO, stream=True, save=True, conf=0.8, imgsz=640
+    source=INPUT_VIDEO, stream=True, save=True, conf=0.5, imgsz=640, classes=classes
 )  # generator of Results objects
 
 for r in results:
