@@ -3,8 +3,8 @@ from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-# model = YOLO("yolov8s.pt")
-model = RTDETR("rtdetr-x.pt")  # rtdetr-l.pt
+model = YOLO("yolov8s.pt")
+# model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
 # Create VideoCapture object
