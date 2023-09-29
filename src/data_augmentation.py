@@ -113,7 +113,7 @@ def apply_aug(
                     shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
                 ),
                 A.Downscale(always_apply=False, p=0.5, scale_min=0.5, scale_max=0.99),
-                A.Blur(always_apply=False, p=0.5, blur_limit=(3, 10)),
+                A.Blur(always_apply=False, p=0.5, blur_limit=(2, 5)),
                 A.Perspective(
                     always_apply=False,
                     p=0.5,
@@ -125,20 +125,8 @@ def apply_aug(
                     fit_output=0,
                     interpolation=0,
                 ),
-                A.ChannelShuffle(always_apply=False, p=0.3),
-                A.ElasticTransform(
-                    always_apply=False,
-                    p=0.3,
-                    alpha=1.0,
-                    sigma=50.0,
-                    alpha_affine=50.0,
-                    interpolation=0,
-                    border_mode=1,
-                    value=(0, 0, 0),
-                    mask_value=None,
-                    approximate=False,
-                    same_dxdy=False,
-                ),
+                A.ChannelShuffle(always_apply=False, p=0.4),
+                A.RandomToneCurve(always_apply=False, p=0.5, scale=0.3),
             ],
             bbox_params=A.BboxParams(format="yolo"),
         )
