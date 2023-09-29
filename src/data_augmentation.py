@@ -105,12 +105,27 @@ def apply_aug(
                     width=704,
                 ),
                 A.HorizontalFlip(p=0.5),
-                A.VerticalFlip(p=0.5),
+                # A.VerticalFlip(p=0.5),
                 A.RandomBrightnessContrast(p=0.5),
                 A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0),
                 A.CLAHE(clip_limit=(0, 1), tile_grid_size=(8, 8), always_apply=True),
                 A.ShiftScaleRotate(
                     shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
+                ),
+                A.Downscale(always_apply=False, p=0.5, scale_min=0.5, scale_max=0.99),
+                A.MotionBlur(
+                    always_apply=False, p=0.5, blur_limit=(1, 11), allow_shifted=True
+                ),
+                A.Perspective(
+                    always_apply=False,
+                    p=0.5,
+                    scale=(0.05, 0.10),
+                    keep_size=1,
+                    pad_mode=0,
+                    pad_val=(0, 0, 0),
+                    mask_pad_val=0,
+                    fit_output=0,
+                    interpolation=0,
                 ),
             ],
             bbox_params=A.BboxParams(format="yolo"),
