@@ -113,7 +113,7 @@ def apply_aug(
                     shift_limit=0.0625, scale_limit=0, rotate_limit=10, p=0.5
                 ),
                 A.Downscale(always_apply=False, p=0.5, scale_min=0.5, scale_max=0.99),
-                A.Blur(always_apply=False, p=1.0, blur_limit=(3, 10)),
+                A.Blur(always_apply=False, p=0.5, blur_limit=(3, 10)),
                 A.Perspective(
                     always_apply=False,
                     p=0.5,
