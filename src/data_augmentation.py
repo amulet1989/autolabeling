@@ -89,8 +89,8 @@ def apply_aug(
                 A.Resize(
                     always_apply=True,
                     p=1.0,
-                    height=480,
-                    width=640,
+                    height=576,  # 480,
+                    width=704,  # 640,
                 ),
             ],
             bbox_params=A.BboxParams(format="yolo"),
@@ -101,8 +101,8 @@ def apply_aug(
                 A.Resize(
                     always_apply=True,
                     p=1.0,
-                    height=480,
-                    width=640,
+                    height=576,
+                    width=704,
                 ),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.5),
@@ -197,7 +197,8 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
     imgs = os.listdir(inp_img_pth)
     logging.info("Generating train augmented images ...")
     for img_file in tqdm(imgs):
-        file_name = img_file.split(".")[0]
+        # file_name = img_file.split(".")[0]
+        file_name = os.path.splitext(img_file)[0]
         image = cv2.imread(os.path.join(inp_img_pth, img_file))
         lab_pth = os.path.join(inp_lab_pth, file_name + ".txt")
         album_bboxes = get_bboxes_list(lab_pth, CLASSES)
@@ -213,7 +214,8 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
     imgs = os.listdir(inp_img_pth_valid)
     logging.info("Addjusting validation data  ...")
     for img_file in tqdm(imgs):
-        file_name = img_file.split(".")[0]
+        # file_name = img_file.split(".")[0]
+        file_name = os.path.splitext(img_file)[0]
         image = cv2.imread(os.path.join(inp_img_pth_valid, img_file))
         lab_pth = os.path.join(inp_lab_pth_valid, file_name + ".txt")
         album_bboxes = get_bboxes_list(lab_pth, CLASSES)
