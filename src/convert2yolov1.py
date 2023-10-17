@@ -68,6 +68,10 @@ def convert_to_yolov1_format(dataset_path):
             if image_file.endswith(".jpg"):
                 validation_txt_file.write(f"data/obj_Validation_data/{image_file}\n")
 
+    # Comprimir la carpeta "_YOLOV1"
+    shutil.make_archive(yolov1_path, "zip", yolov1_path)
+    shutil.rmtree(yolov1_path)
+
 
 if __name__ == "__main__":
     dataset_path = (
