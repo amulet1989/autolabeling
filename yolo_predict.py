@@ -3,7 +3,7 @@ from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-model = YOLO("bestY8m_filas.pt")
+model = YOLO("trainded_models/best.pt")
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
@@ -18,7 +18,7 @@ cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
 #classes = 0
 results = model.track(
-    source=INPUT_VIDEO, stream=True, save=False, conf=0.8, imgsz=704, iou=0.5,
+    source=INPUT_VIDEO, stream=True, save=True, conf=0.8, imgsz=704, iou=0.5,
 )  # generator of Results objects
 
 for r in results:
