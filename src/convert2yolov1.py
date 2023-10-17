@@ -23,8 +23,8 @@ def convert_to_yolov1_format(dataset_path):
     # Crear obj.data
     with open(os.path.join(yolov1_path, "obj.data"), "w") as obj_data_file:
         obj_data_file.write(f"classes = {num_classes}\n")
-        obj_data_file.write(f"Validation = data/obj_Validation_data\n")
-        obj_data_file.write(f"train = data/obj_Train_data\n")
+        obj_data_file.write(f"Validation = data/Validation.txt\n")
+        obj_data_file.write(f"train = data/Train.txt\n")
         obj_data_file.write(f"names = data/obj.names\n")
         obj_data_file.write("backup = backup/\n")
 
