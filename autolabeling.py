@@ -141,7 +141,12 @@ def main():
         action="store_false",
         help="Si queda más de un objeto detectado eliminar imagen",
     )
-
+    parser.add_argument(
+        "--not_augment",
+        default=True,
+        action="store_false",
+        help="Si se desea no aumentar el dataset",
+    )
     parser.add_argument(
         "--augmented_for",
         default=4,
@@ -248,16 +253,17 @@ def main():
         remove_multiple=args.not_remove_multiple,
     )
 
-    # Generar la aumentación de datos
-    dataset_path = os.path.join(args.output_dataset, "Merged_Dataset")
-    augmented_dataset_path = os.path.join(args.output_dataset, "Augmented_Dataset")
-    # creating aumented datased directory
-    if not os.path.exists(augmented_dataset_path):
-        os.makedirs(augmented_dataset_path)
+    if args.not_augment:
+        # Generar la aumentación de datos
+        dataset_path = os.path.join(args.output_dataset, "Merged_Dataset")
+        augmented_dataset_path = os.path.join(args.output_dataset, "Augmented_Dataset")
+        # creating aumented datased directory
+        if not os.path.exists(augmented_dataset_path):
+            os.makedirs(augmented_dataset_path)
 
-    augment_dataset(
-        dataset_path, augmented_dataset_path, augmented_for=args.augmented_for
-    )
+        augment_dataset(
+            dataset_path, augmented_dataset_path, augmented_for=args.augmented_for
+        )
 
     print("Process ended")
 
