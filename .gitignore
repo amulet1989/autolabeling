@@ -176,4 +176,5 @@ dataset/
 images/
 test/
 runs/
+train_models/
 *.pt

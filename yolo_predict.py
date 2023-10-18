@@ -3,22 +3,26 @@ from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-model = YOLO("trainded_models/best.pt")
+model = YOLO("train_models/best.pt")  # best_Y8_fila best_y5AWS
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
 # Create VideoCapture object
 INPUT_VIDEO = seleccionar_video()
-#INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.75"
+# INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.71"
 
 # Read video
 cap = cv2.VideoCapture(INPUT_VIDEO)
 win_name = "Camera Preview"
 cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
-#classes = 0
-results = model.track(
-    source=INPUT_VIDEO, stream=True, save=True, conf=0.8, imgsz=704, iou=0.5,
+# classes = 0
+results = model(
+    source=INPUT_VIDEO,
+    stream=True,
+    save=True,
+    conf=0.7,
+    imgsz=640,  # classes=classes
 )  # generator of Results objects
 
 for r in results:

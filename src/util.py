@@ -46,11 +46,14 @@ def video2images(
     for out_video_path in tqdm(video_paths):
         video_name = out_video_path.stem
         image_name_pattern = video_name + "-{:05d}.jpg"
+        print(out_video_path)
         with sv.ImageSink(
-            target_dir_path=image_dir_path, image_name_pattern=image_name_pattern
+            target_dir_path=image_dir_path,
+            image_name_pattern=image_name_pattern,
         ) as sink:
             for image in sv.get_video_frames_generator(
-                source_path=str(out_video_path), stride=frame_rate
+                source_path=str(out_video_path),
+                stride=frame_rate,
             ):
                 if height is not None and width is not None:
                     image = cv2.resize(image, (width, height))
