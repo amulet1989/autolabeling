@@ -2,6 +2,7 @@ import os
 import shutil
 import yaml
 import zipfile
+import argparse
 
 
 def convert_to_yolov1_format(dataset_path):
@@ -161,7 +162,24 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
 
 
 if __name__ == "__main__":
-    dataset_path = (
-        "RUTA_DEL_DATASET_YOLOV8"  # Reemplaza con la ruta de tu dataset YOLOv8
+    parser = argparse.ArgumentParser(
+        description="Convert YOLOv8 dataset to YOLOv1 format"
     )
-    convert_to_yolov1_format(dataset_path)
+    parser.add_argument(
+        "--dataset_path",
+        default="dataset",
+        type=str,
+        help="Ruta al archivo de video",
+    )
+
+    args = parser.parse_args()
+
+    for dataset_name in os.listdir(args.dataset_path):
+        dataset_path = os.path.join(args.dataset_path, dataset_name)
+
+        # Verificar si el elemento en DATASET_DIR_PATH es un directorio
+        if os.path.isdir(dataset_path):
+            print(f"Procesando el dataset: {dataset_name}")
+            convert_to_yolov1_format(dataset_path)
+
+        print("Proceso de conversión completado.")
