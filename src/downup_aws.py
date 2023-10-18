@@ -64,14 +64,14 @@ def main():
 
     parser.add_argument(
         "--bucket_name",
-        default="AWS_BUCKET",
+        default=AWS_BUCKET,
         type=str,
         help="Nombre del bucket",
     )
 
     parser.add_argument(
         "--bucket_path",
-        default="AWS_FILE_PATH",
+        default=AWS_FILE_PATH,
         type=str,
         help="Path al archivo .zip dentro del bucket",
     )
