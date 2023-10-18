@@ -64,7 +64,7 @@ def main():
 
     parser.add_argument(
         "--bucket_name",
-        default=os.getenv("AWS_BUCKET_NAME"),  # leer from .env, # leer from .env
+        default=os.getenv("AWS_BUCKET"),  # leer from .env, # leer from .env
         type=str,
         help="Nombre del bucket",
     )
@@ -100,6 +100,7 @@ def main():
     args = parser.parse_args()
 
     if args.download:
+        print(args.bucket_name, args.bucket_path, args.videos_dir)
         download_from_s3(
             bucket_name=args.bucket_name,
             bucket_path=args.bucket_path,
