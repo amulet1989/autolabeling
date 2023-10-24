@@ -102,11 +102,11 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
     os.makedirs(valid_labels_dir, exist_ok=True)
 
     # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
-    for filename in os.listdir(os.path.join(yolov8_dir, "obj_Train_data")):
+    for filename in os.listdir(os.path.join(yolov8_dir, "obj_train_data")):
         if filename.endswith(".jpg"):
-            image_path = os.path.join(yolov8_dir, "obj_Train_data", filename)
+            image_path = os.path.join(yolov8_dir, "obj_train_data", filename)
             label_filename = filename.replace(".jpg", ".txt")
-            label_path = os.path.join(yolov8_dir, "obj_Train_data", label_filename)
+            label_path = os.path.join(yolov8_dir, "obj_train_data", label_filename)
 
             # Mover imágenes
             shutil.move(image_path, os.path.join(train_images_dir, filename))
