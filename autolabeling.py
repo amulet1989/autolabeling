@@ -2,7 +2,7 @@ import argparse
 from src import config
 import json
 from src.util import video2images, get_video_folder_paths, merge_datasets
-from src.model import autolabel_images
+from src.model import autolabel_images, label_multiple_yolov8
 from src.dataset_processing import run_processing_dataset
 from src.data_augmentation import augment_dataset
 from tqdm import tqdm
@@ -23,6 +23,7 @@ def mypipeline(
     num_datasets: int,
     height: int = None,
     width: int = None,
+    use_yolo: bool = False,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -56,15 +57,24 @@ def mypipeline(
     video2images(video_path, image_dir_path, frame_rate, height, width)
 
     # 2- Run autolabel for each image in image_dir_path
-    autolabel_images(
-        input_folder=image_dir_path,
-        ontology=ontology,
-        box_threshold=box_threshold,
-        text_threshold=text_threshold,
-        output_folder=dataset_dir_path,
-        extension=extension,
-        num_datasets=num_datasets,
-    )
+    if not use_yolo:
+        autolabel_images(
+            input_folder=image_dir_path,
+            ontology=ontology,
+            box_threshold=box_threshold,
+            text_threshold=text_threshold,
+            output_folder=dataset_dir_path,
+            extension=extension,
+            num_datasets=num_datasets,
+        )
+    else:
+        # Run autolabel con YOLO
+        label_multiple_yolov8(
+            model_path="train_models/yolo8n_4cam_100epochs.pt",
+            input_folder=image_dir_path,
+            output_folder=dataset_dir_path,
+            confidence=0.7,
+        )
 
 
 def main():
@@ -154,6 +164,12 @@ def main():
         help="Proporción en la que se aumentará el dataset",
     )
     parser.add_argument(
+        "--use_yolo",
+        default=False,
+        action="store_true",
+        help="Si se desea utilizar el modelo de YOLO",
+    )
+    parser.add_argument(
         "--num_datasets", default=4, type=int, help="Numero de datasets"
     )
     parser.add_argument(
@@ -201,6 +217,7 @@ def main():
             args.num_datasets,
             args.height,
             args.width,
+            args.use_yolo,
         )
     else:
         for video_path in tqdm(video_paths):
@@ -216,6 +233,7 @@ def main():
                 args.num_datasets,
                 args.height,
                 args.width,
+                args.use_yolo,
             )
 
     # Unir datasets
