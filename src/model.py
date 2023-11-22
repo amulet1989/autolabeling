@@ -1,6 +1,7 @@
 from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from autodistill.helpers import split_data
+from autodistill_yolov8 import YOLOv8
 
 from src import config
 
@@ -10,7 +11,9 @@ from tqdm import tqdm
 import glob
 import os
 import gc
-
+import shutil
+import random
+import yaml
 
 import numpy as np
 
@@ -158,3 +161,88 @@ def predict_and_visualice(
     )
 
     sv.plot_image(image=annotated_image, size=(16, 10))
+
+
+# funcion para crear una carpeta dentro de un directorio si no existe
+def crear_carpeta(directorio, nombre=None):
+    if nombre != None:
+        directorio = os.path.join(directorio, nombre)
+    if not os.path.exists(directorio):
+        os.mkdir(directorio)
+    return directorio
+
+
+def inferir_y_guardar(
+    image_paths,
+    model,
+    imag_folder,
+    label_folder,
+    confidence=0.7,
+):
+    for image_path in image_paths:
+        results = model.predict(image_path, confidence=confidence)
+        # salvar imagen en train_images_folder
+        image_name = os.path.basename(image_path)
+        shutil.copy(image_path, imag_folder)
+
+        # crear un txt para almacenar las labels de la imagen
+        txt_name = image_name.replace(".jpg", ".txt")
+        txt_path = os.path.join(label_folder, txt_name)
+        with open(txt_path, "a") as f:
+            label = results[0].boxes.cls
+            coordenadas = results[0].boxes.xywhn
+            for lab, (x, y, w, h) in zip(label, coordenadas):
+                f.write("{} {} {} {} {}\n".format(int(lab), x, y, w, h))
+    return results[0].names
+
+
+def label_multiple_yolov8(
+    model_path,
+    input_folder: str,
+    output_folder: str = None,
+    confidence=0.7,
+):
+    # hacer una lista de todos los path de imagenes en el directorio input_folder
+    glob_path = os.path.join(input_folder, "*.jpg")
+    image_paths = glob.glob(glob_path)
+    modelyolo = YOLOv8(model_path)
+
+    # hacer una particion aleatoria 80 - 20 de la lista de imagenes
+    train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
+    valid_images = list(set(image_paths) - set(train_images))
+
+    # obtener en nombre de carpeta de input_folder
+    directory_name = os.path.basename(os.path.normpath(input_folder))
+    output_folder = crear_carpeta(output_folder, directory_name)
+
+    train = crear_carpeta(output_folder, "train")
+    valid = crear_carpeta(output_folder, "valid")
+    train_images_folder = crear_carpeta(train, "images")
+    train_labels_folder = crear_carpeta(train, "labels")
+    valid_images_folder = crear_carpeta(valid, "images")
+    valid_labels_folder = crear_carpeta(valid, "labels")
+
+    train_names = inferir_y_guardar(
+        train_images,
+        modelyolo,
+        train_images_folder,
+        train_labels_folder,
+        confidence,
+    )
+    inferir_y_guardar(
+        valid_images,
+        modelyolo,
+        valid_images_folder,
+        valid_labels_folder,
+        confidence,
+    )
+
+    print(train_names)
+    # Definir otras variables
+    nc = len(train_names)
+    data = {"names": list(train_names.values()), "nc": nc, "train": train, "val": valid}
+
+    # Escribir el diccionario en un archivo YAML
+    yaml_path = os.path.join(output_folder, "data.yaml")
+    with open(yaml_path, "w") as yaml_file:
+        yaml.dump(data, yaml_file, default_flow_style=False)

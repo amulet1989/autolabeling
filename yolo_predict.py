@@ -3,7 +3,7 @@ from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-model = YOLO("train_models/best.pt")  # best_Y8_fila best_y5AWS
+model = YOLO("train_models/yolo8n_4cam_100epochs.pt")  # best_Y8_fila best_y5AWS
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
@@ -22,7 +22,7 @@ results = model(
     stream=True,
     save=True,
     conf=0.7,
-    imgsz=640,  # classes=classes
+    imgsz=704,  # classes=classes
 )  # generator of Results objects
 
 for r in results:
