@@ -3,7 +3,9 @@ from ultralytics import YOLO, RTDETR
 from src.util import seleccionar_video
 
 
-model = YOLO("train_models/yolo8n_4cam_100epochs.pt")  # best_Y8_fila best_y5AWS
+model = YOLO(
+    "train_models/yolov8m_4cam_VicenteLopez.pt"
+)  # best_Y8_fila best_y5AWS /yolo8n_4cam_100epochs.pt
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
