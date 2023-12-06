@@ -70,7 +70,7 @@ def mypipeline(
     else:
         # Run autolabel con YOLO
         label_multiple_yolov8(
-            model_path="train_models/yolo8m_4cam_100epochs.pt",
+            model_path="train_models/yolov8m_4cam_VicenteLopez.pt",
             input_folder=image_dir_path,
             output_folder=dataset_dir_path,
             confidence=0.7,

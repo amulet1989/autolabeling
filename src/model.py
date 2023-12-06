@@ -2,6 +2,7 @@ from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from autodistill.helpers import split_data
 from autodistill_yolov8 import YOLOv8
+from ultralytics import YOLO
 
 from src import config
 
@@ -179,8 +180,14 @@ def inferir_y_guardar(
     label_folder,
     confidence=0.7,
 ):
+    # Para visualizar
+    win_name = "Camera Preview"
+    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+
+    # Inferencia
     for image_path in image_paths:
-        results = model.predict(image_path, confidence=confidence)
+        results = model(source=image_path, conf=confidence, imgsz=1280)
+        # print(len(results))
         # salvar imagen en train_images_folder
         image_name = os.path.basename(image_path)
         shutil.copy(image_path, imag_folder)
@@ -193,6 +200,52 @@ def inferir_y_guardar(
             coordenadas = results[0].boxes.xywhn
             for lab, (x, y, w, h) in zip(label, coordenadas):
                 f.write("{} {} {} {} {}\n".format(int(lab), x, y, w, h))
+
+        # Visualiza
+        for r in results:
+            boxes = r.boxes  # Boxes object for bbox outputs
+
+            image = r.orig_img.copy()
+            if boxes.cls.numel() > 0:
+                classe = boxes.cls.tolist()
+                label = r.names
+                scores = boxes.conf.tolist()  # Confidence scores
+
+                # Draw BBoxes on the image
+                # for box, label, score in zip(boxes, labels, scores):
+                for i, box in enumerate(boxes.xyxy):
+                    x1, y1, x2, y2 = map(int, box)  # box
+                    color = (0, 255, 0)  # Green color
+                    thickness = 2
+
+                    cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+
+                    text = f"{label[int(classe[i])]} ({scores[i]:.2f})"
+                    # print(text)
+
+                    cv2.putText(
+                        image,
+                        text,
+                        (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        1,
+                        color,
+                        thickness,
+                    )
+
+            cv2.imshow(win_name, image)
+
+            # Wait for a key press and check the pressed key
+            key = cv2.waitKey(1)  # & 0xFF
+            if key == ord("q"):  # Press 'q' to exit
+                break
+            elif key == ord("n"):  # Press 'n' to show the next image
+                continue
+
+    # Release VideoCapture and destroy windows
+    # cap.release()
+    cv2.destroyAllWindows()
+
     return results[0].names
 
 
@@ -200,12 +253,12 @@ def label_multiple_yolov8(
     model_path,
     input_folder: str,
     output_folder: str = None,
-    confidence=0.7,
+    confidence=0.8,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
     image_paths = glob.glob(glob_path)
-    modelyolo = YOLOv8(model_path)
+    modelyolo = YOLO(model_path)  # YOLOv8
 
     # hacer una particion aleatoria 80 - 20 de la lista de imagenes
     train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
