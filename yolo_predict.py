@@ -24,7 +24,8 @@ results = model(
     stream=True,
     save=True,
     conf=0.7,
-    imgsz=704,  # classes=classes
+    imgsz=704,
+    iou=0.7,  # classes=classes
 )  # generator of Results objects
 
 for r in results:
