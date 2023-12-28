@@ -2,6 +2,7 @@ import os
 import shutil
 import yaml
 import zipfile
+import argparse
 
 
 def convert_to_yolov1_format(dataset_path):
@@ -101,11 +102,11 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
     os.makedirs(valid_labels_dir, exist_ok=True)
 
     # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
-    for filename in os.listdir(os.path.join(yolov8_dir, "obj_Train_data")):
+    for filename in os.listdir(os.path.join(yolov8_dir, "obj_train_data")):
         if filename.endswith(".jpg"):
-            image_path = os.path.join(yolov8_dir, "obj_Train_data", filename)
+            image_path = os.path.join(yolov8_dir, "obj_train_data", filename)
             label_filename = filename.replace(".jpg", ".txt")
-            label_path = os.path.join(yolov8_dir, "obj_Train_data", label_filename)
+            label_path = os.path.join(yolov8_dir, "obj_train_data", label_filename)
 
             # Mover imágenes
             shutil.move(image_path, os.path.join(train_images_dir, filename))
@@ -161,7 +162,24 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
 
 
 if __name__ == "__main__":
-    dataset_path = (
-        "RUTA_DEL_DATASET_YOLOV8"  # Reemplaza con la ruta de tu dataset YOLOv8
+    parser = argparse.ArgumentParser(
+        description="Convert YOLOv8 dataset to YOLOv1 format"
     )
-    convert_to_yolov1_format(dataset_path)
+    parser.add_argument(
+        "--dataset_path",
+        default="dataset",
+        type=str,
+        help="Ruta al archivo de video",
+    )
+
+    args = parser.parse_args()
+
+    for dataset_name in os.listdir(args.dataset_path):
+        dataset_path = os.path.join(args.dataset_path, dataset_name)
+
+        # Verificar si el elemento en DATASET_DIR_PATH es un directorio
+        if os.path.isdir(dataset_path):
+            print(f"Procesando el dataset: {dataset_name}")
+            convert_to_yolov1_format(dataset_path)
+
+        print("Proceso de conversión completado.")
