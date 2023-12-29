@@ -130,8 +130,8 @@ def run_processing_dataset(
         remove_large_bboxes(label_dir, max_size)
         print("removed large")
     if remove_small and min_size is not None:
-        remove_small_bboxes(label_dir, max_size)
-        print("removed large")
+        remove_small_bboxes(label_dir, min_size)
+        print("removed small")
     if remove_overlapping:
         remove_overlapping_bboxes(label_dir, iou_threshold)
         print("removed overlaping")
