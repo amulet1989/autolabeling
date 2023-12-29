@@ -53,6 +53,8 @@ def mostrar_imagenes_y_anotaciones(directorio_imagenes, directorio_labels):
                     )
 
             # Mostrar la imagen
+            escala = 0.5
+            imagen = cv2.resize(imagen, (int(ancho * escala), int(altura * escala)))
             cv2.imshow("Imagen", imagen)
 
             # Esperar la tecla 'q' para salir o cualquier otra tecla para continuar
