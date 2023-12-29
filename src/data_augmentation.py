@@ -232,7 +232,13 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
         for i in range(augmented_for):
             aug_file_name = f"{file_name}_{transformed_file_name}_{i}"
             apply_aug(
-                image, album_bboxes, out_lab_pth, out_img_pth, aug_file_name, CLASSES
+                image,
+                album_bboxes,
+                out_lab_pth,
+                out_img_pth,
+                aug_file_name,
+                CLASSES,
+                val=False,
             )
     logging.info("Data train augmentation ended ...")
 

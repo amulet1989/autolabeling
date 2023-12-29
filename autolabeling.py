@@ -70,7 +70,7 @@ def mypipeline(
     else:
         # Run autolabel con YOLO
         label_multiple_yolov8(
-            model_path="train_models/yolov8m_4cam_VicenteLopez.pt",
+            model_path="trained_models/yolov8m_cf_4cam_verano_pies_v2.pt",
             input_folder=image_dir_path,
             output_folder=dataset_dir_path,
             confidence=0.7,
@@ -131,25 +131,25 @@ def main():
         "--not_remove_large",
         default=True,
         action="store_false",
-        help="Eliminar BBox demasiado grandes",
+        help="Colocar si no deseamos eliminar BBox demasiado grandes",
     )
     parser.add_argument(
         "--not_remove_overlapping",
         default=True,
         action="store_false",
-        help="Si hay BBox que se superpongan dejar solo uno",
+        help="Colocar si no queremos eliminar BBox que se superpongan",
     )
     parser.add_argument(
         "--not_remove_empty",
         default=True,
         action="store_false",
-        help="Eliminar imágenes sin BBox detectados",
+        help="colocar si no queremos eliminar imágenes sin BBox detectados",
     )
     parser.add_argument(
         "--not_remove_multiple",
         default=True,
         action="store_false",
-        help="Si queda más de un objeto detectado eliminar imagen",
+        help="Colocar si no queremos eliminar imágenes con más de un objeto detectado",
     )
     parser.add_argument(
         "--not_augment",
@@ -167,10 +167,13 @@ def main():
         "--use_yolo",
         default=False,
         action="store_true",
-        help="Si se desea utilizar el modelo de YOLO",
+        help="Si se desea utilizar un modelo de YOLO para etiquetar, se debe modificar en la función mypipeline el path hacia el .pt del modelo",
     )
     parser.add_argument(
-        "--num_datasets", default=4, type=int, help="Numero de datasets"
+        "--num_datasets",
+        default=4,
+        type=int,
+        help="Numero de datasets, útil si se conoce que se generarán muchas imágenes (más de mil) por cada carpeta de videos",
     )
     parser.add_argument(
         "--height", default=None, type=int, help="Altura para resize de las imagenes"
