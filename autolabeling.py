@@ -70,7 +70,7 @@ def mypipeline(
     else:
         # Run autolabel con YOLO
         label_multiple_yolov8(
-            model_path="trained_models/yolov8m_cf_4cam_verano_pies_v2.pt",
+            model_path="trained_models/cf_pilar_tracking_yolov8m_11cam.pt",
             input_folder=image_dir_path,
             output_folder=dataset_dir_path,
             confidence=0.7,
