@@ -122,6 +122,9 @@ def main():
         "--max_size", default=0.5, type=float, help="Tamaño maximo de BBox"
     )
     parser.add_argument(
+        "--min_size", default=0.05, type=float, help="Tamaño minimo de BBox"
+    )
+    parser.add_argument(
         "--iou_threshold",
         default=0.4,
         type=float,
@@ -132,6 +135,12 @@ def main():
         default=True,
         action="store_false",
         help="Colocar si no deseamos eliminar BBox demasiado grandes",
+    )
+    parser.add_argument(
+        "--not_remove_small",
+        default=True,
+        action="store_false",
+        help="Colocar si no deseamos eliminar BBox demasiado pequeños",
     )
     parser.add_argument(
         "--not_remove_overlapping",
@@ -256,9 +265,11 @@ def main():
         os.path.join(output_path, "train", "images"),
         os.path.join(output_path, "train", "labels"),
         max_size=args.max_size,
+        min_size=args.min_size,
         iou_threshold=args.iou_threshold,
         remove_empty=args.not_remove_empty,
         remove_large=args.not_remove_large,
+        remove_small=args.not_remove_small,
         remove_overlapping=args.not_remove_overlapping,
         remove_multiple=args.not_remove_multiple,
     )
@@ -267,9 +278,11 @@ def main():
         os.path.join(output_path, "valid", "images"),
         os.path.join(output_path, "valid", "labels"),
         max_size=args.max_size,
+        min_size=args.min_size,
         iou_threshold=args.iou_threshold,
         remove_empty=args.not_remove_empty,
         remove_large=args.not_remove_large,
+        remove_small=args.not_remove_small,
         remove_overlapping=args.not_remove_overlapping,
         remove_multiple=args.not_remove_multiple,
     )

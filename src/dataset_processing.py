@@ -35,6 +35,20 @@ def remove_large_bboxes(label_dir, max_size):
             f.writelines(updated_annotations)
 
 
+def remove_small_bboxes(label_dir, min_size):
+    for label_file in os.listdir(label_dir):
+        label_path = os.path.join(label_dir, label_file)
+        with open(label_path, "r") as f:
+            annotations = f.readlines()
+        updated_annotations = []
+        for annotation in annotations:
+            class_id, x, y, w, h = map(float, annotation.strip().split())
+            if w > min_size and h > min_size:
+                updated_annotations.append(annotation)
+        with open(label_path, "w") as f:
+            f.writelines(updated_annotations)
+
+
 def remove_overlapping_bboxes(label_dir, iou_threshold=0.2):
     for label_file in os.listdir(label_dir):
         label_path = os.path.join(label_dir, label_file)
@@ -69,11 +83,13 @@ def run_processing_dataset(
     image_dir: str,
     label_dir: str,
     max_size: float = 0.5,
+    min_size: float = 0.05,
     iou_threshold: float = 0.4,
     remove_empty: bool = True,
     remove_large: bool = True,
     remove_overlapping: bool = True,
     remove_multiple: bool = True,
+    remove_small: bool = True,
 ) -> None:
     """
     Process a dataset of images and labels.
@@ -109,8 +125,12 @@ def run_processing_dataset(
     images with no labels.
 
     """
+    # remove_small_bboxes
     if remove_large and max_size is not None:
         remove_large_bboxes(label_dir, max_size)
+        print("removed large")
+    if remove_small and min_size is not None:
+        remove_small_bboxes(label_dir, max_size)
         print("removed large")
     if remove_overlapping:
         remove_overlapping_bboxes(label_dir, iou_threshold)
