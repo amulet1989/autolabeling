@@ -125,7 +125,7 @@ def run_processing_dataset(
     images with no labels.
 
     """
-    # remove_small_bboxes
+
     if remove_large and max_size is not None:
         remove_large_bboxes(label_dir, max_size)
         print("removed large")
