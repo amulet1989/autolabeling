@@ -254,6 +254,7 @@ def label_multiple_yolov8(
     input_folder: str,
     output_folder: str = None,
     confidence=0.8,
+    tracking=False,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -261,8 +262,12 @@ def label_multiple_yolov8(
     modelyolo = YOLO(model_path)  # YOLOv8
 
     # hacer una particion aleatoria 80 - 20 de la lista de imagenes
-    train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
-    valid_images = list(set(image_paths) - set(train_images))
+    if tracking:
+        train_images = random.sample(image_paths, int(1.0 * len(image_paths)))
+        valid_images = list(set(image_paths) - set(train_images))
+    else:
+        train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
+        valid_images = list(set(image_paths) - set(train_images))
 
     # obtener en nombre de carpeta de input_folder
     directory_name = os.path.basename(os.path.normpath(input_folder))
@@ -282,13 +287,14 @@ def label_multiple_yolov8(
         train_labels_folder,
         confidence,
     )
-    inferir_y_guardar(
-        valid_images,
-        modelyolo,
-        valid_images_folder,
-        valid_labels_folder,
-        confidence,
-    )
+    if tracking == False:
+        inferir_y_guardar(
+            valid_images,
+            modelyolo,
+            valid_images_folder,
+            valid_labels_folder,
+            confidence,
+        )
 
     print(train_names)
     # Definir otras variables
