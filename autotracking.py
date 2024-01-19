@@ -206,6 +206,24 @@ def main():
                 args.width,
                 # args.use_yolo,
             )
+    # Procesar Merged_Dataset/train para eliminar errores de anotación
+    contenido = os.listdir(args.output_dataset)
+    print("Contenido \n", contenido)
+
+    for data_p in contenido:
+        output_path = os.path.join(args.output_dataset, data_p)
+        run_processing_dataset(
+            os.path.join(output_path, "train", "images"),
+            os.path.join(output_path, "train", "labels"),
+            max_size=args.max_size,
+            min_size=args.min_size,
+            iou_threshold=args.iou_threshold,
+            remove_empty=args.not_remove_empty,
+            remove_large=args.not_remove_large,
+            remove_small=args.not_remove_small,
+            remove_overlapping=args.not_remove_overlapping,
+            remove_multiple=args.not_remove_multiple,
+        )
 
 
 if __name__ == "__main__":

@@ -274,11 +274,13 @@ def label_multiple_yolov8(
     output_folder = crear_carpeta(output_folder, directory_name)
 
     train = crear_carpeta(output_folder, "train")
-    valid = crear_carpeta(output_folder, "valid")
     train_images_folder = crear_carpeta(train, "images")
     train_labels_folder = crear_carpeta(train, "labels")
-    valid_images_folder = crear_carpeta(valid, "images")
-    valid_labels_folder = crear_carpeta(valid, "labels")
+
+    if tracking == False:
+        valid = crear_carpeta(output_folder, "valid")
+        valid_images_folder = crear_carpeta(valid, "images")
+        valid_labels_folder = crear_carpeta(valid, "labels")
 
     train_names = inferir_y_guardar(
         train_images,
@@ -296,10 +298,18 @@ def label_multiple_yolov8(
             confidence,
         )
 
-    print(train_names)
+    # print(train_names)
     # Definir otras variables
     nc = len(train_names)
-    data = {"names": list(train_names.values()), "nc": nc, "train": train, "val": valid}
+    if tracking == False:
+        data = {
+            "names": list(train_names.values()),
+            "nc": nc,
+            "train": train,
+            "val": valid,
+        }
+    else:
+        data = {"names": list(train_names.values()), "nc": nc, "train": train}
 
     # Escribir el diccionario en un archivo YAML
     yaml_path = os.path.join(output_folder, "data.yaml")
