@@ -178,3 +178,4 @@ test/
 runs/
 trained_models/
 *.pt
+*.ipynb
