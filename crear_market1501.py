@@ -26,6 +26,9 @@ def parse_cvat_annotations(xml_path):
                 "label": box_elem.get("label"),
                 "person_id": int(box_elem.find(".//attribute[@name='person_id']").text),
                 "camera_id": int(box_elem.find(".//attribute[@name='camera_id']").text),
+                "secuence_id": int(
+                    box_elem.find(".//attribute[@name='secuence_id']").text
+                ),
                 "xtl": float(box_elem.get("xtl")),
                 "ytl": float(box_elem.get("ytl")),
                 "xbr": float(box_elem.get("xbr")),
@@ -42,13 +45,14 @@ def process_cvat_annotations(cvat_annotations, output_folder, path_to_images):
     for image_data in cvat_annotations:
         for box_data in image_data["boxes"]:
             person_id = str(box_data["person_id"]).zfill(4)
+            secuence_id = f's{str(box_data["person_id"]).zfill(3)}'
             camera_id = f'c{str(box_data["camera_id"])}'
             image_id = str(image_data["id"]).zfill(6)
 
             person_folder = os.path.join(output_folder, person_id)
             os.makedirs(person_folder, exist_ok=True)
 
-            image_name = f"{person_id}_{camera_id}_{image_id}.jpg"
+            image_name = f"{person_id}_{camera_id}{secuence_id}_{image_id}.jpg"
             image_path = os.path.join(person_folder, image_name)
 
             image = Image.open(os.path.join(path_to_images, image_data["name"]))
