@@ -154,7 +154,12 @@ def apply_aug(
         print("label file is empty")
 
 
-def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) -> None:
+def augment_dataset(
+    input_path: str,
+    output_path: str,
+    just_rezize: bool = False,
+    augmented_for: int = 10,
+) -> None:
     """
     Aplica transformaciones a los datos de entrada.
     Args:
@@ -238,7 +243,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
                 out_img_pth,
                 aug_file_name,
                 CLASSES,
-                val=True,
+                val=just_rezize,
             )
     logging.info("Data train augmentation ended ...")
 
