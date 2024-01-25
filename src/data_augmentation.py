@@ -238,7 +238,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
                 out_img_pth,
                 aug_file_name,
                 CLASSES,
-                val=False,
+                val=True,
             )
     logging.info("Data train augmentation ended ...")
 
