@@ -45,7 +45,7 @@ def process_cvat_annotations(cvat_annotations, output_folder, path_to_images):
     for image_data in cvat_annotations:
         for box_data in image_data["boxes"]:
             person_id = str(box_data["person_id"]).zfill(4)
-            secuence_id = f's{str(box_data["person_id"]).zfill(3)}'
+            secuence_id = f's{str(box_data["secuence_id"])}'  # .zfill(3)
             camera_id = f'c{str(box_data["camera_id"])}'
             image_id = str(image_data["id"]).zfill(6)
 
