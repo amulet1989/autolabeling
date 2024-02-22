@@ -232,6 +232,7 @@ def augment_dataset(
         file_name = os.path.splitext(img_file)[0]
         image = cv2.imread(os.path.join(inp_img_pth, img_file))
         lab_pth = os.path.join(inp_lab_pth, file_name + ".txt")
+        print(lab_pth)
         album_bboxes = get_bboxes_list(lab_pth, CLASSES)
 
         for i in range(augmented_for):

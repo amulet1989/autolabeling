@@ -96,7 +96,7 @@ from tqdm import tqdm
 import yaml
 
 
-def merge_datasets(dataset_paths: List, output_path: str):
+def merge_datasets(dataset_paths: List, output_path: str, val=True):
     """
     Merge datasets.
 
@@ -130,7 +130,12 @@ def merge_datasets(dataset_paths: List, output_path: str):
                     class_id_mapping[class_name] = class_id
 
         for class_name in data["names"]:
-            for split in ["train", "valid"]:
+            if val:
+                my_splits = ["train", "valid"]
+            else:
+                my_splits = ["train"]
+
+            for split in my_splits:
                 src_images_dir = os.path.join(dataset_path, split, "images")
                 src_labels_dir = os.path.join(dataset_path, split, "labels")
 
@@ -139,6 +144,12 @@ def merge_datasets(dataset_paths: List, output_path: str):
 
                 dest_labels_dir = os.path.join(output_path, split, "labels")
                 os.makedirs(dest_labels_dir, exist_ok=True)
+
+                # Crear directorios para las etiquetas de validación si no existen
+                if split == "train":
+                    os.makedirs(
+                        os.path.join(output_path, "valid", "labels"), exist_ok=True
+                    )
 
                 for image_file in os.listdir(src_images_dir):
                     shutil.copy(
