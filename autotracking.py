@@ -23,6 +23,8 @@ def mypipeline_track(
     height: int = None,
     width: int = None,
     # use_yolo: bool = False,
+    model_path: str = "trained_models/yolov8m_cf_4cam_verano_pies_v3.pt",
+    val=True,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -51,7 +53,7 @@ def mypipeline_track(
 
     # Run autolabel con YOLO
     label_multiple_yolov8(
-        model_path="trained_models/yolov8m_pilar_tracking_11cam_v1.pt",
+        model_path=model_path,
         input_folder=image_dir_path,
         output_folder=dataset_dir_path,
         confidence=0.7,
