@@ -24,6 +24,7 @@ def mypipeline(
     height: int = None,
     width: int = None,
     use_yolo: bool = False,
+    val=True,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -74,6 +75,7 @@ def mypipeline(
             input_folder=image_dir_path,
             output_folder=dataset_dir_path,
             confidence=0.7,
+            tracking=val,
         )
 
 
@@ -179,6 +181,12 @@ def main():
         help="Si se desea utilizar un modelo de YOLO para etiquetar, se debe modificar en la función mypipeline el path hacia el .pt del modelo",
     )
     parser.add_argument(
+        "--not_val",
+        default=True,
+        action="store_false",
+        help="Si no desea hacer un set de validación y solo sea training",
+    )
+    parser.add_argument(
         "--num_datasets",
         default=4,
         type=int,
@@ -230,6 +238,7 @@ def main():
             args.height,
             args.width,
             args.use_yolo,
+            args.not_val,
         )
     else:
         for video_path in tqdm(video_paths):
@@ -246,6 +255,7 @@ def main():
                 args.height,
                 args.width,
                 args.use_yolo,
+                args.not_val,
             )
 
     # Unir datasets
@@ -258,7 +268,7 @@ def main():
     # Lista de paths de cada dataset individual
     dataset_paths = [os.path.join(args.output_dataset, folder) for folder in folders]
     # Hacer el merge
-    merge_datasets(dataset_paths, output_path)
+    merge_datasets(dataset_paths, output_path, args.not_val)
 
     # Procesar Merged_Dataset/train para eliminar errores de anotación
     run_processing_dataset(
