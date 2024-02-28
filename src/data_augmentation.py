@@ -88,8 +88,8 @@ def apply_aug(
     transformed_file_name,
     classes,
     val=False,
-    height=576,
-    width=704,
+    height=480,  # 576,
+    width=640,  # 704,
 ):
     if val:
         transform = A.Compose(
@@ -159,6 +159,8 @@ def augment_dataset(
     output_path: str,
     just_rezize: bool = False,
     augmented_for: int = 10,
+    height: int = 480,  # 576, height, width
+    width: int = 640,  # 704
 ) -> None:
     """
     Aplica transformaciones a los datos de entrada.
@@ -245,6 +247,8 @@ def augment_dataset(
                 aug_file_name,
                 CLASSES,
                 val=just_rezize,
+                height=height,
+                width=width,
             )
     logging.info("Data train augmentation ended ...")
 
@@ -267,5 +271,7 @@ def augment_dataset(
             aug_file_name,
             CLASSES,
             val=True,
+            height=height,
+            width=width,
         )
     logging.info("Data augmentation ended ...")
