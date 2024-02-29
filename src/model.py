@@ -174,11 +174,7 @@ def crear_carpeta(directorio, nombre=None):
 
 
 def inferir_y_guardar(
-    image_paths,
-    model,
-    imag_folder,
-    label_folder,
-    confidence=0.7,
+    image_paths, model, imag_folder, label_folder, confidence=0.7, iou=0.7, imgsz=1280
 ):
     # Para visualizar
     win_name = "Camera Preview"
@@ -186,7 +182,7 @@ def inferir_y_guardar(
 
     # Inferencia
     for image_path in image_paths:
-        results = model(source=image_path, conf=confidence, imgsz=1280)
+        results = model(source=image_path, conf=confidence, iou=iou, imgsz=imgsz)
         # print(len(results))
         # salvar imagen en train_images_folder
         image_name = os.path.basename(image_path)
@@ -254,6 +250,8 @@ def label_multiple_yolov8(
     input_folder: str,
     output_folder: str = None,
     confidence=0.8,
+    iou=0.7,
+    imgsz=1280,
     tracking=False,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
@@ -288,6 +286,8 @@ def label_multiple_yolov8(
         train_images_folder,
         train_labels_folder,
         confidence,
+        iou=iou,
+        imgsz=imgsz,
     )
     if tracking == False:
         inferir_y_guardar(
@@ -296,6 +296,8 @@ def label_multiple_yolov8(
             valid_images_folder,
             valid_labels_folder,
             confidence,
+            iou=iou,
+            imgsz=imgsz,
         )
 
     # print(train_names)
