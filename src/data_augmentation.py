@@ -113,14 +113,14 @@ def apply_aug(
                     width=width,
                 ),
                 A.HorizontalFlip(always_apply=False, p=0.5),
-                # A.VerticalFlip(p=0.5),
-                A.RandomBrightnessContrast(always_apply=False, p=0.3),
+                A.VerticalFlip(p=0.2),
+                # A.RandomBrightnessContrast(always_apply=False, p=0.3),
                 A.RandomBrightnessContrast(
                     always_apply=False, brightness_limit=0.2, contrast_limit=0, p=0.3
                 ),
-                A.CLAHE(
-                    always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
-                ),
+                # A.CLAHE(
+                #     always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
+                # ),
                 A.ShiftScaleRotate(
                     always_apply=False,
                     p=0.2,
@@ -135,8 +135,18 @@ def apply_aug(
                     rotate_method="largest_box",
                 ),
                 A.RandomToneCurve(always_apply=False, p=0.3, scale=0.1),
-                A.ChannelShuffle(always_apply=False, p=0.3),
-                A.Blur(always_apply=False, p=0.2, blur_limit=(1, 3)),
+                # A.ChannelShuffle(always_apply=False, p=0.3),
+                A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+                A.AdvancedBlur(
+                    always_apply=False,
+                    p=1.0,
+                    blur_limit=(3, 7),
+                    sigmaX_limit=(0.2, 1.0),
+                    sigmaY_limit=(0.2, 1.0),
+                    rotate_limit=(-90, 90),
+                    beta_limit=(0.5, 8.0),
+                    noise_limit=(0.9, 1.1),
+                ),
                 # A.Downscale(always_apply=False, p=0.3, scale_min=0.5, scale_max=0.99),
             ],
             bbox_params=A.BboxParams(format="yolo"),
