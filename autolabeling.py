@@ -24,7 +24,11 @@ def mypipeline(
     height: int = None,
     width: int = None,
     use_yolo: bool = False,
-    val=True,
+    not_val=False,
+    model_path: str = "yolov8m.pt",
+    confidence=0.4,
+    iou=0.7,
+    imgsz=640,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -71,11 +75,13 @@ def mypipeline(
     else:
         # Run autolabel con YOLO
         label_multiple_yolov8(
-            model_path="trained_models/yolov8m_cf_4cam_verano_pies_v3.pt",
+            model_path=model_path,
             input_folder=image_dir_path,
             output_folder=dataset_dir_path,
-            confidence=0.7,
-            tracking=val,
+            confidence=confidence,
+            iou=iou,
+            imgsz=imgsz,
+            tracking=not_val,
         )
 
 
