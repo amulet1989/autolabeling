@@ -96,6 +96,11 @@ La función de autolabeling contiene numerosos parámetros para modificar su fun
         type=float, 
         help="Tamaño maximo de BBox, útil para eliminar BBox grandes, si consideramos que no es lógico tener objetos mayores que umbral dado, su valor está normalizado (0-1) con el tamaño de la imagen"
 ```  
+        "--min_size", 
+        default=0.05, 
+        type=float, 
+        help="Tamaño minimo de BBox, si consideramos que no es lógico tener objetos menores que umbral dado, su valor está normalizado (0-1) con el tamaño de la imagen "
+    
 ```  
         "--iou_threshold",
         default=0.4,
@@ -109,6 +114,12 @@ La función de autolabeling contiene numerosos parámetros para modificar su fun
         action="store_false",
         help="Colocar si no deseamos eliminar BBox demasiado grandes",
  ```
+ ```
+        "--not_remove_small",
+        default=True,
+        action="store_false",
+        help="Colocar si no deseamos eliminar BBox demasiado pequeños",
+```
  ```   
         "--not_remove_overlapping",
         default=True,

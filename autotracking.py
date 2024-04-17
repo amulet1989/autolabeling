@@ -11,24 +11,23 @@ from typing import Dict
 import shutil
 
 
-def mypipeline(
+def mypipeline_track(
     video_path: str,
     image_dir_path: str,
     frame_rate: isinstance,
-    ontology: Dict,
     output_images: str,
     extension: str,
-    box_threshold: float,
-    text_threshold: float,
-    num_datasets: int,
+    # box_threshold: float,
+    # text_threshold: float,
+    # num_datasets: int,
     height: int = None,
     width: int = None,
-    use_yolo: bool = False,
-    not_val=False,
-    model_path: str = "yolov8m.pt",
+    # use_yolo: bool = False,
+    model_path: str = "trained_models/yolov8m_cf_4cam_verano_pies_v3.pt",
     confidence=0.4,
     iou=0.7,
-    imgsz=640,
+    imgsz=1280,
+    # val=True,
 ) -> None:
     """
     Pipeline para procesar videos y detección de objetos
@@ -51,38 +50,22 @@ def mypipeline(
 
     # create dataset folder for each video folder
     dataset_dir_path = output_images
-    # dataset_dir_path = os.path.join(output_images, os.path.basename(video_path))
-    # if os.path.exists(dataset_dir_path):
-    #    shutil.rmtree(
-    #        dataset_dir_path
-    #    )  # Si ya existe borra el directorio y su contenido
-    # os.mkdir(dataset_dir_path)  # y lo crea el directorio nuevamente
 
     # convert video to images
     video2images(video_path, image_dir_path, frame_rate, height, width)
 
-    # 2- Run autolabel for each image in image_dir_path
-    if not use_yolo:
-        autolabel_images(
-            input_folder=image_dir_path,
-            ontology=ontology,
-            box_threshold=box_threshold,
-            text_threshold=text_threshold,
-            output_folder=dataset_dir_path,
-            extension=extension,
-            num_datasets=num_datasets,
-        )
-    else:
-        # Run autolabel con YOLO
-        label_multiple_yolov8(
-            model_path=model_path,
-            input_folder=image_dir_path,
-            output_folder=dataset_dir_path,
-            confidence=confidence,
-            iou=iou,
-            imgsz=imgsz,
-            tracking=not_val,
-        )
+    # Run autolabel con YOLO
+    label_multiple_yolov8(
+        model_path=model_path,
+        input_folder=image_dir_path,
+        output_folder=dataset_dir_path,
+        confidence=confidence,
+        iou=iou,
+        imgsz=imgsz,
+        tracking=True,
+    )
+
+    print("pipeline ended")
 
 
 def main():
@@ -102,15 +85,8 @@ def main():
         help="Ruta al directorio de imágenes",
     )
     parser.add_argument(
-        "--frame_rate", default=1, type=int, help="Tasa de cuadros por segundo"
+        "--frame_rate", default=20, type=int, help="Tasa de cuadros por segundo"
     )
-    parser.add_argument(
-        "--ontology",
-        default="ontology.json",
-        type=str,
-        help="Archivo JSON de ontología",
-    )
-
     parser.add_argument(
         "--output_dataset",
         default=config.DATASET_DIR_PATH,
@@ -119,12 +95,6 @@ def main():
     )
     parser.add_argument(
         "--extension", default=".jpg", type=str, help="Extensión de archivo"
-    )
-    parser.add_argument(
-        "--box_threshold", default=0.35, type=float, help="Umbral de caja"
-    )
-    parser.add_argument(
-        "--text_threshold", default=0.25, type=float, help="Umbral de texto"
     )
     parser.add_argument(
         "--max_size", default=0.5, type=float, help="Tamaño maximo de BBox"
@@ -181,24 +151,6 @@ def main():
         help="Proporción en la que se aumentará el dataset",
     )
     parser.add_argument(
-        "--use_yolo",
-        default=False,
-        action="store_true",
-        help="Si se desea utilizar un modelo de YOLO para etiquetar, se debe modificar en la función mypipeline el path hacia el .pt del modelo",
-    )
-    parser.add_argument(
-        "--not_val",
-        default=True,
-        action="store_false",
-        help="Si no desea hacer un set de validación y solo sea training",
-    )
-    parser.add_argument(
-        "--num_datasets",
-        default=4,
-        type=int,
-        help="Numero de datasets, útil si se conoce que se generarán muchas imágenes (más de mil) por cada carpeta de videos",
-    )
-    parser.add_argument(
         "--height", default=None, type=int, help="Altura para resize de las imagenes"
     )
     parser.add_argument(
@@ -231,91 +183,54 @@ def main():
         print("No se encontraron videos")
         return
     elif len(video_paths) == 1:
-        mypipeline(
+        mypipeline_track(
             video_paths[0],
             args.image_dir,
             args.frame_rate,
-            json.load(open(os.path.join(video_paths[0], "ontology.json"))),
+            # json.load(open(os.path.join(video_paths[0], "ontology.json"))),
             args.output_dataset,
             args.extension,
-            args.box_threshold,
-            args.text_threshold,
-            args.num_datasets,
+            # args.box_threshold,
+            # args.text_threshold,
+            # args.num_datasets,
             args.height,
             args.width,
-            args.use_yolo,
-            args.not_val,
+            # args.use_yolo,
         )
     else:
         for video_path in tqdm(video_paths):
-            mypipeline(
+            mypipeline_track(
                 video_path,
                 args.image_dir,
                 args.frame_rate,
-                json.load(open(os.path.join(video_path, "ontology.json"))),
+                # json.load(open(os.path.join(video_path, "ontology.json"))),
                 args.output_dataset,
                 args.extension,
-                args.box_threshold,
-                args.text_threshold,
-                args.num_datasets,
+                # args.box_threshold,
+                # args.text_threshold,
+                # args.num_datasets,
                 args.height,
                 args.width,
-                args.use_yolo,
-                args.not_val,
+                # args.use_yolo,
             )
-
-    # Unir datasets
-    # Si existe la carpeta Merged_Dataset Borra el directorio y su contenido
-    output_path = os.path.join(args.output_dataset, "Merged_Dataset")
-    if os.path.exists(output_path):
-        shutil.rmtree(output_path)  # Si ya existe Borra el directorio y su contenido
-    # Nombre de carpeta de cada datatset individuali
-    folders = os.listdir(args.output_dataset)
-    # Lista de paths de cada dataset individual
-    dataset_paths = [os.path.join(args.output_dataset, folder) for folder in folders]
-    # Hacer el merge
-    merge_datasets(dataset_paths, output_path, args.not_val)
-
     # Procesar Merged_Dataset/train para eliminar errores de anotación
-    run_processing_dataset(
-        os.path.join(output_path, "train", "images"),
-        os.path.join(output_path, "train", "labels"),
-        max_size=args.max_size,
-        min_size=args.min_size,
-        iou_threshold=args.iou_threshold,
-        remove_empty=args.not_remove_empty,
-        remove_large=args.not_remove_large,
-        remove_small=args.not_remove_small,
-        remove_overlapping=args.not_remove_overlapping,
-        remove_multiple=args.not_remove_multiple,
-    )
-    # Procesar Merged_Dataset/valid para eliminar errores de anotación
-    run_processing_dataset(
-        os.path.join(output_path, "valid", "images"),
-        os.path.join(output_path, "valid", "labels"),
-        max_size=args.max_size,
-        min_size=args.min_size,
-        iou_threshold=args.iou_threshold,
-        remove_empty=args.not_remove_empty,
-        remove_large=args.not_remove_large,
-        remove_small=args.not_remove_small,
-        remove_overlapping=args.not_remove_overlapping,
-        remove_multiple=args.not_remove_multiple,
-    )
+    contenido = os.listdir(args.output_dataset)
+    print("Contenido \n", contenido)
 
-    if args.not_augment:
-        # Generar la aumentación de datos
-        dataset_path = os.path.join(args.output_dataset, "Merged_Dataset")
-        augmented_dataset_path = os.path.join(args.output_dataset, "Augmented_Dataset")
-        # creating aumented datased directory
-        if not os.path.exists(augmented_dataset_path):
-            os.makedirs(augmented_dataset_path)
-
-        augment_dataset(
-            dataset_path, augmented_dataset_path, augmented_for=args.augmented_for
+    for data_p in contenido:
+        output_path = os.path.join(args.output_dataset, data_p)
+        run_processing_dataset(
+            os.path.join(output_path, "train", "images"),
+            os.path.join(output_path, "train", "labels"),
+            max_size=args.max_size,
+            min_size=args.min_size,
+            iou_threshold=args.iou_threshold,
+            remove_empty=args.not_remove_empty,
+            remove_large=args.not_remove_large,
+            remove_small=args.not_remove_small,
+            remove_overlapping=args.not_remove_overlapping,
+            remove_multiple=args.not_remove_multiple,
         )
-
-    print("Process ended")
 
 
 if __name__ == "__main__":

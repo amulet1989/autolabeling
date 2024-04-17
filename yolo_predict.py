@@ -4,7 +4,7 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/yolov8m_cf_4cam_verano_pies_v3.pt"
+    "trained_models/yolov8m_cf_4cam_verano_pies_v3_cam62_v1.pt"
 )  # best_Y8_fila best_y5AWS /yolo8n_4cam_100epochs.pt
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
@@ -24,7 +24,7 @@ results = model.track(
     source=INPUT_VIDEO,
     stream=True,
     save=True,
-    conf=0.7,
+    conf=0.3,
     imgsz=704,
     iou=0.7,  # classes=classes
 )  # generator of Results objects

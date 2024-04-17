@@ -88,8 +88,8 @@ def apply_aug(
     transformed_file_name,
     classes,
     val=False,
-    height=576,
-    width=704,
+    height=480,  # 576,
+    width=640,  # 704,
 ):
     if val:
         transform = A.Compose(
@@ -113,21 +113,21 @@ def apply_aug(
                     width=width,
                 ),
                 A.HorizontalFlip(always_apply=False, p=0.5),
-                # A.VerticalFlip(p=0.5),
-                A.RandomBrightnessContrast(always_apply=False, p=0.3),
+                # A.VerticalFlip(p=0.2),
+                # A.RandomBrightnessContrast(always_apply=False, p=0.3),
                 A.RandomBrightnessContrast(
                     always_apply=False, brightness_limit=0.2, contrast_limit=0, p=0.3
                 ),
-                A.CLAHE(
-                    always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
-                ),
+                # A.CLAHE(
+                #     always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
+                # ),
                 A.ShiftScaleRotate(
                     always_apply=False,
-                    p=0.5,
-                    shift_limit_x=(-0.06, 0.06),
-                    shift_limit_y=(-0.06, 0.06),
+                    p=0.2,
+                    shift_limit_x=(-0.02, 0.02),
+                    shift_limit_y=(-0.02, 0.02),
                     scale_limit=(-0.09999999999999998, 0.10000000000000009),
-                    rotate_limit=(-30, 30),
+                    rotate_limit=(-5, 5),
                     interpolation=1,
                     border_mode=2,
                     value=(0, 0, 0),
@@ -135,8 +135,18 @@ def apply_aug(
                     rotate_method="largest_box",
                 ),
                 A.RandomToneCurve(always_apply=False, p=0.3, scale=0.1),
-                A.ChannelShuffle(always_apply=False, p=0.3),
-                # A.Blur(always_apply=False, p=0.3, blur_limit=(1, 3)),
+                # A.ChannelShuffle(always_apply=False, p=0.3),
+                A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+                A.AdvancedBlur(
+                    always_apply=False,
+                    p=1.0,
+                    blur_limit=(3, 7),
+                    sigmaX_limit=(0.2, 1.0),
+                    sigmaY_limit=(0.2, 1.0),
+                    rotate_limit=(-90, 90),
+                    beta_limit=(0.5, 8.0),
+                    noise_limit=(0.9, 1.1),
+                ),
                 # A.Downscale(always_apply=False, p=0.3, scale_min=0.5, scale_max=0.99),
             ],
             bbox_params=A.BboxParams(format="yolo"),
@@ -154,7 +164,14 @@ def apply_aug(
         print("label file is empty")
 
 
-def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) -> None:
+def augment_dataset(
+    input_path: str,
+    output_path: str,
+    just_rezize: bool = False,
+    augmented_for: int = 10,
+    height: int = 480,  # 576, height, width
+    width: int = 640,  # 704
+) -> None:
     """
     Aplica transformaciones a los datos de entrada.
     Args:
@@ -227,6 +244,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
         file_name = os.path.splitext(img_file)[0]
         image = cv2.imread(os.path.join(inp_img_pth, img_file))
         lab_pth = os.path.join(inp_lab_pth, file_name + ".txt")
+        print(lab_pth)
         album_bboxes = get_bboxes_list(lab_pth, CLASSES)
 
         for i in range(augmented_for):
@@ -238,7 +256,9 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
                 out_img_pth,
                 aug_file_name,
                 CLASSES,
-                val=False,
+                val=just_rezize,
+                height=height,
+                width=width,
             )
     logging.info("Data train augmentation ended ...")
 
@@ -261,5 +281,7 @@ def augment_dataset(input_path: str, output_path: str, augmented_for: int = 10) 
             aug_file_name,
             CLASSES,
             val=True,
+            height=height,
+            width=width,
         )
     logging.info("Data augmentation ended ...")

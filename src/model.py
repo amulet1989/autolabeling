@@ -174,11 +174,7 @@ def crear_carpeta(directorio, nombre=None):
 
 
 def inferir_y_guardar(
-    image_paths,
-    model,
-    imag_folder,
-    label_folder,
-    confidence=0.7,
+    image_paths, model, imag_folder, label_folder, confidence=0.7, iou=0.7, imgsz=1280
 ):
     # Para visualizar
     win_name = "Camera Preview"
@@ -186,7 +182,7 @@ def inferir_y_guardar(
 
     # Inferencia
     for image_path in image_paths:
-        results = model(source=image_path, conf=confidence, imgsz=1280)
+        results = model(source=image_path, conf=confidence, iou=iou, imgsz=imgsz)
         # print(len(results))
         # salvar imagen en train_images_folder
         image_name = os.path.basename(image_path)
@@ -254,6 +250,9 @@ def label_multiple_yolov8(
     input_folder: str,
     output_folder: str = None,
     confidence=0.8,
+    iou=0.7,
+    imgsz=1280,
+    tracking=False,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -261,19 +260,25 @@ def label_multiple_yolov8(
     modelyolo = YOLO(model_path)  # YOLOv8
 
     # hacer una particion aleatoria 80 - 20 de la lista de imagenes
-    train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
-    valid_images = list(set(image_paths) - set(train_images))
+    if tracking:
+        train_images = random.sample(image_paths, int(1.0 * len(image_paths)))
+        valid_images = list(set(image_paths) - set(train_images))
+    else:
+        train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
+        valid_images = list(set(image_paths) - set(train_images))
 
     # obtener en nombre de carpeta de input_folder
     directory_name = os.path.basename(os.path.normpath(input_folder))
     output_folder = crear_carpeta(output_folder, directory_name)
 
     train = crear_carpeta(output_folder, "train")
-    valid = crear_carpeta(output_folder, "valid")
     train_images_folder = crear_carpeta(train, "images")
     train_labels_folder = crear_carpeta(train, "labels")
-    valid_images_folder = crear_carpeta(valid, "images")
-    valid_labels_folder = crear_carpeta(valid, "labels")
+
+    if tracking == False:
+        valid = crear_carpeta(output_folder, "valid")
+        valid_images_folder = crear_carpeta(valid, "images")
+        valid_labels_folder = crear_carpeta(valid, "labels")
 
     train_names = inferir_y_guardar(
         train_images,
@@ -281,19 +286,32 @@ def label_multiple_yolov8(
         train_images_folder,
         train_labels_folder,
         confidence,
+        iou=iou,
+        imgsz=imgsz,
     )
-    inferir_y_guardar(
-        valid_images,
-        modelyolo,
-        valid_images_folder,
-        valid_labels_folder,
-        confidence,
-    )
+    if tracking == False:
+        inferir_y_guardar(
+            valid_images,
+            modelyolo,
+            valid_images_folder,
+            valid_labels_folder,
+            confidence,
+            iou=iou,
+            imgsz=imgsz,
+        )
 
-    print(train_names)
+    # print(train_names)
     # Definir otras variables
     nc = len(train_names)
-    data = {"names": list(train_names.values()), "nc": nc, "train": train, "val": valid}
+    if tracking == False:
+        data = {
+            "names": list(train_names.values()),
+            "nc": nc,
+            "train": train,
+            "val": valid,
+        }
+    else:
+        data = {"names": list(train_names.values()), "nc": nc, "train": train}
 
     # Escribir el diccionario en un archivo YAML
     yaml_path = os.path.join(output_folder, "data.yaml")
