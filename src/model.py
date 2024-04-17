@@ -25,6 +25,8 @@ def label_multiple(
     extension: str = ".jpg",
     output_folder: str = None,
     num_datasets: int = 4,
+    val: bool = False,
+    val_ratio: float = 0.2,
 ) -> None:
     if output_folder is None:
         output_folder = input_folder + "_labeled"
@@ -66,7 +68,24 @@ def label_multiple(
             ),
         )
 
-        split_data(output_folder + f"/{directory_name}_{i+1}")
+        if val:
+            split_data(
+                output_folder + f"/{directory_name}_{i+1}", split_ratio=val_ratio
+            )
+        else:
+            # copiar la carpeta images a train/images
+            shutil.copytree(
+                output_folder + f"/{directory_name}_{i+1}/images",
+                output_folder + f"/{directory_name}_{i+1}/train/images",
+            )
+            # Eliminar el directorio de origen y su contenido
+            shutil.rmtree(output_folder + f"/{directory_name}_{i+1}/images")
+            # copiar la carpeta annotations a train/labels
+            shutil.copytree(
+                output_folder + f"/{directory_name}_{i+1}/annotations",
+                output_folder + f"/{directory_name}_{i+1}/train/labels",
+            )
+            shutil.rmtree(output_folder + f"/{directory_name}_{i+1}/annotations")
 
         # Liberar memoria
         images_map.clear()
@@ -91,6 +110,8 @@ def autolabel_images(
     output_folder=config.DATASET_DIR_PATH,
     extension=".jpg",
     num_datasets=4,
+    val=False,
+    val_ratio=0.2,
 ):
     """
     Autolabel images in a folder.
@@ -121,6 +142,8 @@ def autolabel_images(
         extension=extension,
         output_folder=output_folder,
         num_datasets=num_datasets,
+        val=val,
+        val_ratio=val_ratio,
     )
 
 
