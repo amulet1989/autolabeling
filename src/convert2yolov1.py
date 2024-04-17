@@ -2,9 +2,10 @@ import os
 import shutil
 import yaml
 import zipfile
+import argparse
 
 
-def convert_to_yolov1_format(dataset_path):
+def convert_to_yolov1_format(dataset_path, with_val=True):
     # Crear una carpeta con el sufijo "_YOLOV1"
     yolov1_path = dataset_path + "_YOLOV1"
     os.makedirs(yolov1_path, exist_ok=True)
@@ -22,31 +23,68 @@ def convert_to_yolov1_format(dataset_path):
             obj_names_file.write(f"{class_name}\n")
 
     # Crear obj.data
-    with open(os.path.join(yolov1_path, "obj.data"), "w") as obj_data_file:
-        obj_data_file.write(f"classes = {num_classes}\n")
-        obj_data_file.write(f"Validation = data/Validation.txt\n")
-        obj_data_file.write(f"train = data/Train.txt\n")
-        obj_data_file.write(f"names = data/obj.names\n")
-        obj_data_file.write("backup = backup/\n")
+    if with_val:
+        with open(os.path.join(yolov1_path, "obj.data"), "w") as obj_data_file:
+            obj_data_file.write(f"classes = {num_classes}\n")
+            obj_data_file.write(f"Validation = data/Validation.txt\n")
+            obj_data_file.write(f"train = data/Train.txt\n")
+            obj_data_file.write(f"names = data/obj.names\n")
+            obj_data_file.write("backup = backup/\n")
 
-    # Crear las carpetas obj_Train_data y obj_Validation_data
-    obj_train_data_path = os.path.join(yolov1_path, "obj_Train_data")
-    obj_validation_data_path = os.path.join(yolov1_path, "obj_Validation_data")
-    os.makedirs(obj_train_data_path, exist_ok=True)
-    os.makedirs(obj_validation_data_path, exist_ok=True)
+        # Crear las carpetas obj_Train_data y obj_Validation_data
+        obj_train_data_path = os.path.join(yolov1_path, "obj_Train_data")
+        obj_validation_data_path = os.path.join(yolov1_path, "obj_Validation_data")
+        os.makedirs(obj_train_data_path, exist_ok=True)
+        os.makedirs(obj_validation_data_path, exist_ok=True)
 
-    # Copiar imágenes y etiquetas de la carpeta "valid" del dataset original
-    valid_images_path = os.path.join(dataset_path, "valid", "images")
-    valid_labels_path = os.path.join(dataset_path, "valid", "labels")
+        # Copiar imágenes y etiquetas de la carpeta "valid" del dataset original
+        valid_images_path = os.path.join(dataset_path, "valid", "images")
+        valid_labels_path = os.path.join(dataset_path, "valid", "labels")
 
-    for image_file in os.listdir(valid_images_path):
-        if image_file.endswith(".jpg"):
-            image_path = os.path.join(valid_images_path, image_file)
-            shutil.copy(image_path, obj_validation_data_path)
+        for image_file in os.listdir(valid_images_path):
+            if image_file.endswith(".jpg"):
+                image_path = os.path.join(valid_images_path, image_file)
+                shutil.copy(image_path, obj_validation_data_path)
 
-            label_file = image_file.replace(".jpg", ".txt")
-            label_path = os.path.join(valid_labels_path, label_file)
-            shutil.copy(label_path, obj_validation_data_path)
+                label_file = image_file.replace(".jpg", ".txt")
+                label_path = os.path.join(valid_labels_path, label_file)
+                shutil.copy(label_path, obj_validation_data_path)
+
+        with open(
+            os.path.join(yolov1_path, "Validation.txt"), "w"
+        ) as validation_txt_file:
+            for image_file in os.listdir(obj_validation_data_path):
+                if image_file.endswith(".jpg"):
+                    validation_txt_file.write(
+                        f"data/obj_Validation_data/{image_file}\n"
+                    )
+
+    else:
+        with open(os.path.join(yolov1_path, "obj.data"), "w") as obj_data_file:
+            obj_data_file.write(f"classes = {num_classes}\n")
+            # obj_data_file.write(f"Validation = data/Validation.txt\n")
+            obj_data_file.write(f"train = data/Train.txt\n")
+            obj_data_file.write(f"names = data/obj.names\n")
+            obj_data_file.write("backup = backup/\n")
+
+        # Crear las carpetas obj_Train_data y obj_Validation_data
+        obj_train_data_path = os.path.join(yolov1_path, "obj_Train_data")
+        # obj_validation_data_path = os.path.join(yolov1_path, "obj_Validation_data")
+        os.makedirs(obj_train_data_path, exist_ok=True)
+        # os.makedirs(obj_validation_data_path, exist_ok=True)
+
+        # Copiar imágenes y etiquetas de la carpeta "valid" del dataset original
+        # valid_images_path = os.path.join(dataset_path, "valid", "images")
+        # valid_labels_path = os.path.join(dataset_path, "valid", "labels")
+
+        # for image_file in os.listdir(valid_images_path):
+        #     if image_file.endswith(".jpg"):
+        #         image_path = os.path.join(valid_images_path, image_file)
+        #         shutil.copy(image_path, obj_validation_data_path)
+
+        #         label_file = image_file.replace(".jpg", ".txt")
+        #         label_path = os.path.join(valid_labels_path, label_file)
+        #         shutil.copy(label_path, obj_validation_data_path)
 
     # Leer y copiar imágenes y archivos de etiquetas de la carpeta "train" del dataset original
     for image_file in os.listdir(os.path.join(dataset_path, "train", "images")):
@@ -63,11 +101,6 @@ def convert_to_yolov1_format(dataset_path):
         for image_file in os.listdir(obj_train_data_path):
             if image_file.endswith(".jpg"):
                 train_txt_file.write(f"data/obj_Train_data/{image_file}\n")
-
-    with open(os.path.join(yolov1_path, "Validation.txt"), "w") as validation_txt_file:
-        for image_file in os.listdir(obj_validation_data_path):
-            if image_file.endswith(".jpg"):
-                validation_txt_file.write(f"data/obj_Validation_data/{image_file}\n")
 
     # Comprimir la carpeta "_YOLOV1"
     shutil.make_archive(yolov1_path, "zip", yolov1_path)
@@ -101,11 +134,11 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
     os.makedirs(valid_labels_dir, exist_ok=True)
 
     # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
-    for filename in os.listdir(os.path.join(yolov8_dir, "obj_Train_data")):
+    for filename in os.listdir(os.path.join(yolov8_dir, "obj_train_data")):
         if filename.endswith(".jpg"):
-            image_path = os.path.join(yolov8_dir, "obj_Train_data", filename)
+            image_path = os.path.join(yolov8_dir, "obj_train_data", filename)
             label_filename = filename.replace(".jpg", ".txt")
-            label_path = os.path.join(yolov8_dir, "obj_Train_data", label_filename)
+            label_path = os.path.join(yolov8_dir, "obj_train_data", label_filename)
 
             # Mover imágenes
             shutil.move(image_path, os.path.join(train_images_dir, filename))
@@ -161,7 +194,24 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
 
 
 if __name__ == "__main__":
-    dataset_path = (
-        "RUTA_DEL_DATASET_YOLOV8"  # Reemplaza con la ruta de tu dataset YOLOv8
+    parser = argparse.ArgumentParser(
+        description="Convert YOLOv8 dataset to YOLOv1 format"
     )
-    convert_to_yolov1_format(dataset_path)
+    parser.add_argument(
+        "--dataset_path",
+        default="dataset",
+        type=str,
+        help="Ruta al archivo de video",
+    )
+
+    args = parser.parse_args()
+
+    for dataset_name in os.listdir(args.dataset_path):
+        dataset_path = os.path.join(args.dataset_path, dataset_name)
+
+        # Verificar si el elemento en DATASET_DIR_PATH es un directorio
+        if os.path.isdir(dataset_path):
+            print(f"Procesando el dataset: {dataset_name}")
+            convert_to_yolov1_format(dataset_path)
+
+        print("Proceso de conversión completado.")

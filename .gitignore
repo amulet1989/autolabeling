@@ -176,5 +176,6 @@ dataset/
 images/
 test/
 runs/
-train_models/
+trained_models/
 *.pt
+*.ipynb
