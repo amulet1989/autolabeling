@@ -171,6 +171,7 @@ def augment_dataset(
     augmented_for: int = 10,
     height: int = 480,  # 576, height, width
     width: int = 640,  # 704
+    val: bool = True,
 ) -> None:
     """
     Aplica transformaciones a los datos de entrada.
@@ -197,10 +198,12 @@ def augment_dataset(
         os.makedirs(out_img_pth)
     if not os.path.exists(out_lab_pth):
         os.makedirs(out_lab_pth)
-    if not os.path.exists(out_img_pth_valid):
-        os.makedirs(out_img_pth_valid)
-    if not os.path.exists(out_lab_pth_valid):
-        os.makedirs(out_lab_pth_valid)
+
+    if val:
+        if not os.path.exists(out_img_pth_valid):
+            os.makedirs(out_img_pth_valid)
+        if not os.path.exists(out_lab_pth_valid):
+            os.makedirs(out_lab_pth_valid)
 
     # Copy valid dataset to output folder
     # logging.info("Coping valid dataset ...")
@@ -223,7 +226,9 @@ def augment_dataset(
 
     # Actualizar los valores de las claves "train" y "val"
     data["train"] = os.path.join(output_path, "train", "images")
-    data["val"] = os.path.join(output_path, "valid", "images")
+
+    if val:
+        data["val"] = os.path.join(output_path, "valid", "images")
 
     # Guardar el archivo YAML actualizado
     with open(os.path.join(output_path, "data.yaml"), "w") as file:
@@ -263,25 +268,26 @@ def augment_dataset(
     logging.info("Data train augmentation ended ...")
 
     # Transformando datos de validación (no aumenta solo rescala)
-    imgs = os.listdir(inp_img_pth_valid)
-    logging.info("Addjusting validation data  ...")
-    for img_file in tqdm(imgs):
-        # file_name = img_file.split(".")[0]
-        file_name = os.path.splitext(img_file)[0]
-        image = cv2.imread(os.path.join(inp_img_pth_valid, img_file))
-        lab_pth = os.path.join(inp_lab_pth_valid, file_name + ".txt")
-        album_bboxes = get_bboxes_list(lab_pth, CLASSES)
+    if val:
+        imgs = os.listdir(inp_img_pth_valid)
+        logging.info("Addjusting validation data  ...")
+        for img_file in tqdm(imgs):
+            # file_name = img_file.split(".")[0]
+            file_name = os.path.splitext(img_file)[0]
+            image = cv2.imread(os.path.join(inp_img_pth_valid, img_file))
+            lab_pth = os.path.join(inp_lab_pth_valid, file_name + ".txt")
+            album_bboxes = get_bboxes_list(lab_pth, CLASSES)
 
-        aug_file_name = f"{file_name}_{transformed_file_name}"
-        apply_aug(
-            image,
-            album_bboxes,
-            out_lab_pth_valid,
-            out_img_pth_valid,
-            aug_file_name,
-            CLASSES,
-            val=True,
-            height=height,
-            width=width,
-        )
+            aug_file_name = f"{file_name}_{transformed_file_name}"
+            apply_aug(
+                image,
+                album_bboxes,
+                out_lab_pth_valid,
+                out_img_pth_valid,
+                aug_file_name,
+                CLASSES,
+                val=True,
+                height=height,
+                width=width,
+            )
     logging.info("Data augmentation ended ...")
