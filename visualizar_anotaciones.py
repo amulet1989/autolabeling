@@ -12,17 +12,19 @@ def seleccionar_directorio():
     return directorio_seleccionado
 
 
-def mostrar_imagenes_y_anotaciones(directorio_imagenes, directorio_labels):
+def mostrar_imagenes_y_anotaciones(
+    directorio_imagenes, directorio_labels, extension=".jpg"
+):
     # Obtener la lista de archivos de imágenes en el directorio
     archivos_imagenes = sorted(os.listdir(directorio_imagenes))
 
     # Configurar el sistema de logs
     print("Presiona 'q' para salir.")
     for archivo_imagen in archivos_imagenes:
-        if archivo_imagen.endswith(".jpg"):
+        if archivo_imagen.endswith(extension):
             ruta_imagen = os.path.join(directorio_imagenes, archivo_imagen)
             ruta_label = os.path.join(
-                directorio_labels, archivo_imagen.replace(".jpg", ".txt")
+                directorio_labels, archivo_imagen.replace(extension, ".txt")
             )
 
             # Leer la imagen

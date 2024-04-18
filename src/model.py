@@ -1,7 +1,8 @@
 from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from autodistill.helpers import split_data
-from autodistill_yolov8 import YOLOv8
+
+# from autodistill_yolov8 import YOLOv8
 from ultralytics import YOLO
 
 from src import config
