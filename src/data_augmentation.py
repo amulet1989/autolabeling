@@ -301,8 +301,29 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
     transform = A.Compose(
         [
             A.HorizontalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.2),
+            A.RandomBrightnessContrast(p=1.0),
             A.Rotate(limit=30, p=0.5),
+            A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+            A.AdvancedBlur(
+                always_apply=False,
+                p=1.0,
+                blur_limit=(3, 7),
+                sigmaX_limit=(0.2, 1.0),
+                sigmaY_limit=(0.2, 1.0),
+                rotate_limit=(-90, 90),
+                beta_limit=(0.5, 8.0),
+                noise_limit=(0.9, 1.1),
+            ),
+            A.Flip(always_apply=False, p=0.5),
+            A.MotionBlur(
+                always_apply=False, p=0.2, blur_limit=(3, 7), allow_shifted=True
+            ),
+            A.RandomScale(
+                always_apply=False,
+                p=0.5,
+                interpolation=0,
+                scale_limit=(-0.09999999999999998, 0.10000000000000009),
+            ),
         ]
     )
 
@@ -329,7 +350,7 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 augmented = transform(image=image)
                 augmented_image = augmented["image"]
                 # Generar nuevo nombre de archivo para la imagen aumentada
-                new_filename = f"{img_id}_{camara}_{secuencia}{i}.jpg"
+                new_filename = f"{img_id}_{camara}_{secuencia}_{i}.jpg"
                 # Guardar la imagen aumentada en el directorio de salida
                 cv2.imwrite(os.path.join(output_dir, new_filename), augmented_image)
 
