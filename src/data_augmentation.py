@@ -291,3 +291,46 @@ def augment_dataset(
                 width=width,
             )
     logging.info("Data augmentation ended ...")
+
+
+############## Aumentar dataset ReID ####################
+
+
+def augment_images_reid(input_dir, output_dir, num_augmentations=3):
+    # Lista de transformaciones de aumentación que deseas aplicar
+    transform = A.Compose(
+        [
+            A.HorizontalFlip(p=0.5),
+            A.RandomBrightnessContrast(p=0.2),
+            A.Rotate(limit=30, p=0.5),
+        ]
+    )
+
+    # Crear el directorio de salida si no existe
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Iterar sobre todas las imágenes en el directorio de entrada
+    for filename in os.listdir(input_dir):
+        if filename.endswith(".jpg"):
+            parts = filename.split("_")
+            img_id = parts[0]
+            camara = parts[1]
+            secuencia = parts[2][:-4]
+            # Leer la imagen
+            image = cv2.imread(os.path.join(input_dir, filename))
+
+            # Copiar la imagen original al directorio de salida
+            shutil.copyfile(
+                os.path.join(input_dir, filename), os.path.join(output_dir, filename)
+            )
+
+            # Aplicar transformaciones de aumentación varias veces
+            for i in range(num_augmentations):
+                augmented = transform(image=image)
+                augmented_image = augmented["image"]
+                # Generar nuevo nombre de archivo para la imagen aumentada
+                new_filename = f"{img_id}_{camara}_{secuencia}{i}.jpg"
+                # Guardar la imagen aumentada en el directorio de salida
+                cv2.imwrite(os.path.join(output_dir, new_filename), augmented_image)
+
+                print(f"Imagen aumentada guardada: {new_filename}")
