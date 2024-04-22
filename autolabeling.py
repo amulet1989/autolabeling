@@ -25,6 +25,7 @@ def mypipeline(
     width: int = None,
     use_yolo: bool = False,
     not_val=False,
+    val_ratio=0.2,
     model_path: str = "yolov8m.pt",
     confidence=0.4,
     iou=0.7,
@@ -71,6 +72,8 @@ def mypipeline(
             output_folder=dataset_dir_path,
             extension=extension,
             num_datasets=num_datasets,
+            val=not_val,
+            val_ratio=val_ratio,
         )
     else:
         # Run autolabel con YOLO
@@ -82,6 +85,7 @@ def mypipeline(
             iou=iou,
             imgsz=imgsz,
             tracking=not_val,
+            val_ratio=val_ratio,
         )
 
 
