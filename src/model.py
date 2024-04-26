@@ -277,6 +277,7 @@ def label_multiple_yolov8(
     iou=0.7,
     imgsz=1280,
     tracking=False,
+    val_ratio=0.2,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -288,7 +289,9 @@ def label_multiple_yolov8(
         train_images = random.sample(image_paths, int(1.0 * len(image_paths)))
         valid_images = list(set(image_paths) - set(train_images))
     else:
-        train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
+        train_images = random.sample(
+            image_paths, int((1 - val_ratio) * len(image_paths))
+        )
         valid_images = list(set(image_paths) - set(train_images))
 
     # obtener en nombre de carpeta de input_folder

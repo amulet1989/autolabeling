@@ -5,6 +5,7 @@ from typing import List
 import shutil
 import yaml
 import cv2
+import numpy as np
 
 import tkinter as tk
 from tkinter import filedialog
@@ -234,3 +235,99 @@ def seleccionar_video():
         return file_path
     else:
         return None
+
+
+# Función para calcular estadísticas de imágenes
+# Función para calcular estadísticas de imágenes
+def calcular_estadisticas_imagenes(directorio):
+    # Listar archivos en el directorio
+    archivos = os.listdir(directorio)
+
+    # Inicializar listas para almacenar todos los píxeles de cada canal
+    todos_canales_r = []
+    todos_canales_g = []
+    todos_canales_b = []
+    anchos = []
+    largos = []
+
+    # Iterar sobre cada imagen en el directorio
+    for archivo in archivos:
+        ruta_imagen = os.path.join(directorio, archivo)
+
+        # Leer la imagen usando OpenCV
+        imagen = cv2.imread(ruta_imagen)
+
+        # Obtener dimensiones de la imagen
+        alto, ancho, _ = imagen.shape
+
+        # Almacenar anchos y largos
+        anchos.append(ancho)
+        largos.append(alto)
+
+        # Separar los canales de color
+        canal_r = imagen[:, :, 0].flatten()
+        canal_g = imagen[:, :, 1].flatten()
+        canal_b = imagen[:, :, 2].flatten()
+
+        # Agregar los canales a las listas de todos los canales
+        todos_canales_r.extend(canal_r)
+        todos_canales_g.extend(canal_g)
+        todos_canales_b.extend(canal_b)
+
+    # Convertir listas a matrices NumPy
+    todos_canales_r = np.array(todos_canales_r)
+    todos_canales_g = np.array(todos_canales_g)
+    todos_canales_b = np.array(todos_canales_b)
+
+    # Calcular estadísticas finales
+    # color
+    media_r = np.mean(todos_canales_r)
+    min_r = np.min(todos_canales_r)
+    max_r = np.max(todos_canales_r)
+    std_r = np.std(todos_canales_r)
+    media_g = np.mean(todos_canales_g)
+    std_g = np.std(todos_canales_g)
+    media_b = np.mean(todos_canales_b)
+    std_b = np.std(todos_canales_b)
+    # Tamaño
+    min_ancho = np.min(anchos)
+    max_ancho = np.max(anchos)
+    media_ancho = np.mean(anchos)
+    min_largo = np.min(largos)
+    max_largo = np.max(largos)
+    media_largo = np.mean(largos)
+
+    # Imprimir resultados
+    print("Estadísticas de los canales RGB:")
+    print("Canal Rojo - Min:", min_r, "Max:", max_r)
+    print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
+    print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
+    print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
+    print("Valor mínimo del ancho:", min_ancho)
+    print("Valor máximo del ancho:", max_ancho)
+    print("Valor medio del ancho:", media_ancho)
+    print("Valor mínimo del largo:", min_largo)
+    print("Valor máximo del largo:", max_largo)
+    print("Valor medio del largo:", media_largo)
+
+    return {
+        "color_r": {"media": media_r, "std": std_r},
+        "color_g": {
+            "media": media_g,
+            "std": std_g,
+        },
+        "color_b": {
+            "media": media_b,
+            "std": std_b,
+        },
+        "ancho": {
+            "min": min_ancho,
+            "max": max_ancho,
+            "media": media_ancho,
+        },
+        "largo": {
+            "min": min_largo,
+            "max": max_largo,
+            "media": media_largo,
+        },
+    }
