@@ -6,6 +6,9 @@ import shutil
 import yaml
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
+
+# from scipy import stats
 
 import tkinter as tk
 from tkinter import filedialog
@@ -248,7 +251,7 @@ def calcular_estadisticas_imagenes(directorio):
     todos_canales_g = []
     todos_canales_b = []
     anchos = []
-    largos = []
+    alturas = []
 
     # Iterar sobre cada imagen en el directorio
     for archivo in archivos:
@@ -262,7 +265,7 @@ def calcular_estadisticas_imagenes(directorio):
 
         # Almacenar anchos y largos
         anchos.append(ancho)
-        largos.append(alto)
+        alturas.append(alto)
 
         # Separar los canales de color
         canal_r = imagen[:, :, 0].flatten()
@@ -290,25 +293,82 @@ def calcular_estadisticas_imagenes(directorio):
     media_b = np.mean(todos_canales_b)
     std_b = np.std(todos_canales_b)
     # Tamaño
+    # Anchos
     min_ancho = np.min(anchos)
     max_ancho = np.max(anchos)
     media_ancho = np.mean(anchos)
-    min_largo = np.min(largos)
-    max_largo = np.max(largos)
-    media_largo = np.mean(largos)
+    median_ancho = np.median(anchos)
+    std_ancho = np.std(anchos)
+    # moda_ancho = stats.mode(anchos)
+    # Alto
+    min_alto = np.min(alturas)
+    max_alto = np.max(alturas)
+    media_alto = np.mean(alturas)
+    median_alto = np.median(alturas)
+    std_alto = np.std(alturas)
+    # moda_alto = stats.mode(alturas)
+
+    # Histogramas
+    plt.figure(figsize=(10, 5))
+
+    plt.subplot(1, 2, 1)
+    # plt.hist(anchos, bins=10, color="blue", alpha=0.7)
+    frecuencia, bins, _ = plt.hist(
+        anchos,
+        bins=30,
+        color="blue",
+    )  # alpha=0.7
+    # Encontrar el índice del bin con la frecuencia más alta
+    indice_max_frecuencia = np.argmax(frecuencia)
+    # Determinar el valor del bin correspondiente al índice máximo de frecuencia
+    bin_mas_repetido_ancho = bins[indice_max_frecuencia]
+    plt.title("Histograma de anchos")
+    plt.xlabel("Ancho")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.subplot(1, 2, 2)
+    # plt.hist(alturas, bins=10, color="green", alpha=0.7)
+    frecuencia, bins, _ = plt.hist(
+        alturas,
+        bins=30,
+        color="green",
+    )  # alpha=0.7
+    # Encontrar el índice del bin con la frecuencia más alta
+    indice_max_frecuencia = np.argmax(frecuencia)
+    # Determinar el valor del bin correspondiente al índice máximo de frecuencia
+    bin_mas_repetido_alto = bins[indice_max_frecuencia]
+    plt.title("Histograma de alturas")
+    plt.xlabel("Altura")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
 
     # Imprimir resultados
+    # Color
     print("Estadísticas de los canales RGB:")
     print("Canal Rojo - Min:", min_r, "Max:", max_r)
     print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
     print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
     print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
+    print()
+    # Tamaños
+    # Anchos
     print("Valor mínimo del ancho:", min_ancho)
     print("Valor máximo del ancho:", max_ancho)
     print("Valor medio del ancho:", media_ancho)
-    print("Valor mínimo del largo:", min_largo)
-    print("Valor máximo del largo:", max_largo)
-    print("Valor medio del largo:", media_largo)
+    print("Valor mediana del ancho:", median_ancho)
+    print("Valor std del ancho:", std_ancho)
+    print("Bin mas repetido ancho:", bin_mas_repetido_ancho)
+    # Largos
+    print("Valor mínimo del alto:", min_alto)
+    print("Valor máximo del alto:", max_alto)
+    print("Valor medio del alto:", media_alto)
+    print("Valor mediana del alto:", median_alto)
+    print("Valor std del alto:", std_alto)
+    print("Bin mas repetido alto:", bin_mas_repetido_alto)
 
     return {
         "color_r": {"media": media_r, "std": std_r},
@@ -324,10 +384,12 @@ def calcular_estadisticas_imagenes(directorio):
             "min": min_ancho,
             "max": max_ancho,
             "media": media_ancho,
+            "median": median_ancho,
         },
-        "largo": {
-            "min": min_largo,
-            "max": max_largo,
-            "media": media_largo,
+        "alto": {
+            "min": min_alto,
+            "max": max_alto,
+            "media": media_alto,
+            "median": median_alto,
         },
     }
