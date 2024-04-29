@@ -302,8 +302,8 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
         [
             A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=1.0),
-            A.Rotate(limit=30, p=0.5),
-            A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+            # A.Rotate(limit=30, p=0.5),
+            # A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
             A.AdvancedBlur(
                 always_apply=False,
                 p=1.0,
@@ -324,6 +324,19 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 interpolation=0,
                 scale_limit=(-0.09999999999999998, 0.10000000000000009),
             ),
+            A.CoarseDropout(
+                always_apply=False,
+                p=0.5,
+                max_holes=3,
+                max_height=40,
+                max_width=30,
+                min_holes=2,
+                min_height=40,
+                min_width=30,
+                fill_value=(0, 0, 0),
+                mask_fill_value=None,
+            ),
+            A.ToGray(always_apply=False, p=0.5),
         ]
     )
 

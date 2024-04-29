@@ -385,11 +385,13 @@ def calcular_estadisticas_imagenes(directorio):
             "max": max_ancho,
             "media": media_ancho,
             "median": median_ancho,
+            "std": std_ancho,
         },
         "alto": {
             "min": min_alto,
             "max": max_alto,
             "media": media_alto,
             "median": median_alto,
+            "std": std_alto,
         },
     }
