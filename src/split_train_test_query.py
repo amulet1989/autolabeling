@@ -74,12 +74,12 @@ def split_dataset(dataset_path, output_path, split_ratio=0.5):
             if query_candidates:
                 query_image = random.choice(query_candidates)
                 print("Copiando", query_image)
-                shutil.move(
+                shutil.copy(
                     os.path.join(person_folder, query_image),
                     os.path.join(output_query_path, query_image),
                 )
                 # Eliminar la imagen de consulta original
-                # os.remove(os.path.join(person_folder, query_image))
+                os.remove(os.path.join(output_test_path, query_image))
             else:
                 print(
                     f"No se encontraron imágenes para la cámara {camera_ID} en la carpeta {person_folder}"
