@@ -4,6 +4,9 @@ import yaml
 import cv2
 import albumentations as A
 from tqdm import tqdm
+import random
+import math
+import numpy as np
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -294,13 +297,57 @@ def augment_dataset(
 
 
 ############## Aumentar dataset ReID ####################
+class LocalGrayscalePatchReplacement(A.ImageOnlyTransform):
+    def __init__(
+        self, probability=0.2, sl=0.02, sh=0.4, r1=0.3, always_apply=False, p=1.0
+    ):
+        super().__init__(always_apply, p)
+        self.probability = probability
+        self.sl = sl
+        self.sh = sh
+        self.r1 = r1
+
+    def apply(self, img, **params):
+        if random.uniform(0, 1) >= self.probability:
+            return img
+
+        height, width = img.shape[0], img.shape[1]
+
+        for attempt in range(200):
+            area = height * width
+            target_area = random.uniform(self.sl, self.sh) * area
+            aspect_ratio = random.uniform(self.r1, 1 / self.r1)
+
+            h = int(round(math.sqrt(target_area * aspect_ratio)))
+            w = int(round(math.sqrt(target_area / aspect_ratio)))
+
+            if w < width and h < height:
+                x1 = random.randint(0, width - w)
+                y1 = random.randint(0, height - h)
+
+                # Convertir la región seleccionada a escala de grises
+                patch_gray = cv2.cvtColor(
+                    img[y1 : y1 + h, x1 : x1 + w], cv2.COLOR_RGB2GRAY
+                )
+                # Convertir la región de escala de grises a imagen de 3 canales
+                patch_gray_rgb = cv2.cvtColor(patch_gray, cv2.COLOR_GRAY2RGB)
+
+                # Reemplazar el parche en la imagen original
+                img[y1 : y1 + h, x1 : x1 + w] = patch_gray_rgb
+
+                return img
+
+        return img
+
+    def get_transform_init_args_names(self):
+        return ("probability", "sl", "sh", "r1")
 
 
 def augment_images_reid(input_dir, output_dir, num_augmentations=3):
     # Lista de transformaciones de aumentación que deseas aplicar
     transform = A.Compose(
         [
-            A.HorizontalFlip(p=0.5),
+            # A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=1.0),
             # A.Rotate(limit=30, p=0.5),
             # A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
@@ -314,7 +361,8 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 beta_limit=(0.5, 8.0),
                 noise_limit=(0.9, 1.1),
             ),
-            A.Flip(always_apply=False, p=0.5),
+            # A.Flip(always_apply=False, p=0.5),
+            A.VerticalFlip(always_apply=False, p=0.5),
             A.MotionBlur(
                 always_apply=False, p=0.2, blur_limit=(3, 7), allow_shifted=True
             ),
@@ -324,19 +372,8 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 interpolation=0,
                 scale_limit=(-0.09999999999999998, 0.10000000000000009),
             ),
-            A.CoarseDropout(
-                always_apply=False,
-                p=0.5,
-                max_holes=3,
-                max_height=40,
-                max_width=30,
-                min_holes=2,
-                min_height=40,
-                min_width=30,
-                fill_value=(0, 0, 0),
-                mask_fill_value=None,
-            ),
-            A.ToGray(always_apply=False, p=0.5),
+            A.ToGray(always_apply=False, p=0.1),
+            LocalGrayscalePatchReplacement(probability=1.0, p=0.4),
         ]
     )
 
