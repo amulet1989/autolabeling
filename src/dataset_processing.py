@@ -160,5 +160,5 @@ def run_processing_dataset(
     if remove_empty:
         remove_empty_labels(image_dir, label_dir, remove_multiple=remove_multiple)
         print("removed empty")
-    correct_bad_coords(label_dir)
-    print("corrected negative")
+    # correct_bad_coords(label_dir)
+    # print("corrected negative")
