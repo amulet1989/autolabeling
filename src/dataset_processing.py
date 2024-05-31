@@ -38,7 +38,7 @@ def correct_bad_coords(label_dir):
                 x = 1
             if y > 1:
                 y = 1
-            updated_annotations.append(f"{class_id} {x} {y} {w} {h}\n")
+            updated_annotations.append(f"{int(class_id)} {x} {y} {w} {h}\n")
         with open(label_path, "w") as f:
             f.writelines(updated_annotations)
 
