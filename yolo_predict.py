@@ -4,7 +4,7 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/hand_yolov8m_v2.pt"
+    "trained_models/yolov8m_tracking_pilar_15cam_v1.pt"
 )  # best_Y8_fila best_y5AWS /yolo8n_4cam_100epochs.pt
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
@@ -12,7 +12,7 @@ model = YOLO(
 # Create VideoCapture object
 INPUT_VIDEO = seleccionar_video()
 # INPUT_IMAGE = seleccionar_imagen()
-# INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.61/live1"
+# INPUT_VIDEO = "rtsp://admin:2Mini001.@192.168.88.12/live1"
 
 
 # Read video
@@ -34,10 +34,14 @@ for r in results:
     boxes = r.boxes  # Boxes object for bbox outputs
 
     image = r.orig_img.copy()
+
     if boxes.cls.numel() > 0:
         classe = boxes.cls.tolist()
         label = r.names
         scores = boxes.conf.tolist()  # Confidence scores
+        print("clases:", classe)
+        print("scores:", scores)
+        print("labels:", label)
 
         # Draw BBoxes on the image
         # for box, label, score in zip(boxes, labels, scores):
