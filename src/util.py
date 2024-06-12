@@ -50,7 +50,7 @@ def video2images(
     for out_video_path in tqdm(video_paths):
         video_name = out_video_path.stem
         image_name_pattern = video_name + "-{:05d}.jpg"
-        print(out_video_path)
+        # print(out_video_path)
         with sv.ImageSink(
             target_dir_path=image_dir_path,
             image_name_pattern=image_name_pattern,
