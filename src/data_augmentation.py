@@ -12,6 +12,53 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
+#### Calse custom para generar patch aleatorios en escala de grises #########
+class LocalGrayscalePatchReplacement(A.ImageOnlyTransform):
+    def __init__(
+        self, probability=0.2, sl=0.02, sh=0.4, r1=0.3, always_apply=False, p=1.0
+    ):
+        super().__init__(always_apply, p)
+        self.probability = probability
+        self.sl = sl
+        self.sh = sh
+        self.r1 = r1
+
+    def apply(self, img, **params):
+        if random.uniform(0, 1) >= self.probability:
+            return img
+
+        height, width = img.shape[0], img.shape[1]
+
+        for attempt in range(200):
+            area = height * width
+            target_area = random.uniform(self.sl, self.sh) * area
+            aspect_ratio = random.uniform(self.r1, 1 / self.r1)
+
+            h = int(round(math.sqrt(target_area * aspect_ratio)))
+            w = int(round(math.sqrt(target_area / aspect_ratio)))
+
+            if w < width and h < height:
+                x1 = random.randint(0, width - w)
+                y1 = random.randint(0, height - h)
+
+                # Convertir la región seleccionada a escala de grises
+                patch_gray = cv2.cvtColor(
+                    img[y1 : y1 + h, x1 : x1 + w], cv2.COLOR_RGB2GRAY
+                )
+                # Convertir la región de escala de grises a imagen de 3 canales
+                patch_gray_rgb = cv2.cvtColor(patch_gray, cv2.COLOR_GRAY2RGB)
+
+                # Reemplazar el parche en la imagen original
+                img[y1 : y1 + h, x1 : x1 + w] = patch_gray_rgb
+
+                return img
+
+        return img
+
+    def get_transform_init_args_names(self):
+        return ("probability", "sl", "sh", "r1")
+
+
 def single_obj_bb_yolo_conversion(transformed_bboxes, class_names):
     if len(transformed_bboxes):
         class_num = class_names.index(transformed_bboxes[-1])
@@ -124,22 +171,25 @@ def apply_aug(
                 # A.CLAHE(
                 #     always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
                 # ),
-                A.ShiftScaleRotate(
-                    always_apply=False,
-                    p=0.2,
-                    shift_limit_x=(-0.02, 0.02),
-                    shift_limit_y=(-0.02, 0.02),
-                    scale_limit=(-0.09999999999999998, 0.10000000000000009),
-                    rotate_limit=(-5, 5),
-                    interpolation=1,
-                    border_mode=2,
-                    value=(0, 0, 0),
-                    mask_value=None,
-                    rotate_method="largest_box",
-                ),
+                # A.ShiftScaleRotate(
+                #     always_apply=False,
+                #     p=0.2,
+                #     shift_limit_x=(-0.02, 0.02),
+                #     shift_limit_y=(-0.02, 0.02),
+                #     scale_limit=(-0.09999999999999998, 0.10000000000000009),
+                #     rotate_limit=(-5, 5),
+                #     interpolation=1,
+                #     border_mode=2,
+                #     value=(0, 0, 0),
+                #     mask_value=None,
+                #     rotate_method="largest_box",
+                # ),
                 A.RandomToneCurve(always_apply=False, p=0.3, scale=0.1),
                 # A.ChannelShuffle(always_apply=False, p=0.3),
-                A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+                # A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+                A.MotionBlur(
+                    always_apply=False, p=0.2, blur_limit=(3, 7), allow_shifted=True
+                ),
                 A.AdvancedBlur(
                     always_apply=False,
                     p=1.0,
@@ -151,6 +201,8 @@ def apply_aug(
                     noise_limit=(0.9, 1.1),
                 ),
                 # A.Downscale(always_apply=False, p=0.3, scale_min=0.5, scale_max=0.99),
+                A.ToGray(always_apply=False, p=0.1),
+                LocalGrayscalePatchReplacement(probability=1.0, p=0.4),
             ],
             bbox_params=A.BboxParams(format="yolo"),
         )
@@ -297,52 +349,6 @@ def augment_dataset(
 
 
 ############## Aumentar dataset ReID ####################
-class LocalGrayscalePatchReplacement(A.ImageOnlyTransform):
-    def __init__(
-        self, probability=0.2, sl=0.02, sh=0.4, r1=0.3, always_apply=False, p=1.0
-    ):
-        super().__init__(always_apply, p)
-        self.probability = probability
-        self.sl = sl
-        self.sh = sh
-        self.r1 = r1
-
-    def apply(self, img, **params):
-        if random.uniform(0, 1) >= self.probability:
-            return img
-
-        height, width = img.shape[0], img.shape[1]
-
-        for attempt in range(200):
-            area = height * width
-            target_area = random.uniform(self.sl, self.sh) * area
-            aspect_ratio = random.uniform(self.r1, 1 / self.r1)
-
-            h = int(round(math.sqrt(target_area * aspect_ratio)))
-            w = int(round(math.sqrt(target_area / aspect_ratio)))
-
-            if w < width and h < height:
-                x1 = random.randint(0, width - w)
-                y1 = random.randint(0, height - h)
-
-                # Convertir la región seleccionada a escala de grises
-                patch_gray = cv2.cvtColor(
-                    img[y1 : y1 + h, x1 : x1 + w], cv2.COLOR_RGB2GRAY
-                )
-                # Convertir la región de escala de grises a imagen de 3 canales
-                patch_gray_rgb = cv2.cvtColor(patch_gray, cv2.COLOR_GRAY2RGB)
-
-                # Reemplazar el parche en la imagen original
-                img[y1 : y1 + h, x1 : x1 + w] = patch_gray_rgb
-
-                return img
-
-        return img
-
-    def get_transform_init_args_names(self):
-        return ("probability", "sl", "sh", "r1")
-
-
 def augment_images_reid(input_dir, output_dir, num_augmentations=3):
     # Lista de transformaciones de aumentación que deseas aplicar
     transform = A.Compose(

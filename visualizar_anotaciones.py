@@ -55,7 +55,10 @@ def mostrar_imagenes_y_anotaciones(
                     )
 
             # Mostrar la imagen
-            escala = 0.5
+            if ancho > 720 or altura > 576:
+                escala = 0.5
+            else:
+                escala = 1.0
             imagen = cv2.resize(imagen, (int(ancho * escala), int(altura * escala)))
             cv2.imshow("Imagen", imagen)
 
