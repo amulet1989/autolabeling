@@ -27,7 +27,9 @@ results = model.track(
     save=False,
     conf=0.3,
     imgsz=704,
-    iou=0.7,  # classes=classes
+    iou=0.7,
+    # verbose=False,
+    # classes=classes
 )  # generator of Results objects
 
 for r in results:
@@ -39,9 +41,9 @@ for r in results:
         classe = boxes.cls.tolist()
         label = r.names
         scores = boxes.conf.tolist()  # Confidence scores
-        print("clases:", classe)
-        print("scores:", scores)
-        print("labels:", label)
+        # print("clases:", classe)
+        # print("scores:", scores)
+        # print("labels:", label)
 
         # Draw BBoxes on the image
         # for box, label, score in zip(boxes, labels, scores):
@@ -53,7 +55,7 @@ for r in results:
             cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
 
             text = f"{label[int(classe[i])]} ({scores[i]:.2f})"
-            print(text)
+            # print(text)
 
             cv2.putText(
                 image,
