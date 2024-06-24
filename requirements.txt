@@ -3,10 +3,12 @@ autodistill-grounding-dino==0.1.2
 #autodistill-yolov8==0.1.1
 roboflow==1.1.3
 supervision==0.11.0
-albumentations==1.3.1
+albumentations==1.3.1 
 ultralytics==8.0.187
 ipywidgets==8.1.0
 notebook==6.4.0
 # Para AWS
 python-dotenv==1.0.0
 boto3==1.26.130
+opencv-python==4.8.0.76
+#opencv-python-headless==4.8.0.76

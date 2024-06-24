@@ -1,7 +1,8 @@
 from autodistill.detection import CaptionOntology
 from autodistill_grounding_dino import GroundingDINO
 from autodistill.helpers import split_data
-from autodistill_yolov8 import YOLOv8
+
+# from autodistill_yolov8 import YOLOv8
 from ultralytics import YOLO
 
 from src import config
@@ -25,6 +26,8 @@ def label_multiple(
     extension: str = ".jpg",
     output_folder: str = None,
     num_datasets: int = 4,
+    val: bool = False,
+    val_ratio: float = 0.2,
 ) -> None:
     if output_folder is None:
         output_folder = input_folder + "_labeled"
@@ -66,7 +69,24 @@ def label_multiple(
             ),
         )
 
-        split_data(output_folder + f"/{directory_name}_{i+1}")
+        if val:
+            split_data(
+                output_folder + f"/{directory_name}_{i+1}", split_ratio=val_ratio
+            )
+        else:
+            # copiar la carpeta images a train/images
+            shutil.copytree(
+                output_folder + f"/{directory_name}_{i+1}/images",
+                output_folder + f"/{directory_name}_{i+1}/train/images",
+            )
+            # Eliminar el directorio de origen y su contenido
+            shutil.rmtree(output_folder + f"/{directory_name}_{i+1}/images")
+            # copiar la carpeta annotations a train/labels
+            shutil.copytree(
+                output_folder + f"/{directory_name}_{i+1}/annotations",
+                output_folder + f"/{directory_name}_{i+1}/train/labels",
+            )
+            shutil.rmtree(output_folder + f"/{directory_name}_{i+1}/annotations")
 
         # Liberar memoria
         images_map.clear()
@@ -91,6 +111,8 @@ def autolabel_images(
     output_folder=config.DATASET_DIR_PATH,
     extension=".jpg",
     num_datasets=4,
+    val=False,
+    val_ratio=0.2,
 ):
     """
     Autolabel images in a folder.
@@ -121,6 +143,8 @@ def autolabel_images(
         extension=extension,
         output_folder=output_folder,
         num_datasets=num_datasets,
+        val=val,
+        val_ratio=val_ratio,
     )
 
 
@@ -253,6 +277,7 @@ def label_multiple_yolov8(
     iou=0.7,
     imgsz=1280,
     tracking=False,
+    val_ratio=0.2,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -264,7 +289,9 @@ def label_multiple_yolov8(
         train_images = random.sample(image_paths, int(1.0 * len(image_paths)))
         valid_images = list(set(image_paths) - set(train_images))
     else:
-        train_images = random.sample(image_paths, int(0.8 * len(image_paths)))
+        train_images = random.sample(
+            image_paths, int((1 - val_ratio) * len(image_paths))
+        )
         valid_images = list(set(image_paths) - set(train_images))
 
     # obtener en nombre de carpeta de input_folder

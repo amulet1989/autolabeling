@@ -5,6 +5,10 @@ from typing import List
 import shutil
 import yaml
 import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+# from scipy import stats
 
 import tkinter as tk
 from tkinter import filedialog
@@ -46,7 +50,7 @@ def video2images(
     for out_video_path in tqdm(video_paths):
         video_name = out_video_path.stem
         image_name_pattern = video_name + "-{:05d}.jpg"
-        print(out_video_path)
+        # print(out_video_path)
         with sv.ImageSink(
             target_dir_path=image_dir_path,
             image_name_pattern=image_name_pattern,
@@ -234,3 +238,160 @@ def seleccionar_video():
         return file_path
     else:
         return None
+
+
+# Función para calcular estadísticas de imágenes
+# Función para calcular estadísticas de imágenes
+def calcular_estadisticas_imagenes(directorio):
+    # Listar archivos en el directorio
+    archivos = os.listdir(directorio)
+
+    # Inicializar listas para almacenar todos los píxeles de cada canal
+    todos_canales_r = []
+    todos_canales_g = []
+    todos_canales_b = []
+    anchos = []
+    alturas = []
+
+    # Iterar sobre cada imagen en el directorio
+    for archivo in archivos:
+        ruta_imagen = os.path.join(directorio, archivo)
+
+        # Leer la imagen usando OpenCV
+        imagen = cv2.imread(ruta_imagen)
+
+        # Obtener dimensiones de la imagen
+        alto, ancho, _ = imagen.shape
+
+        # Almacenar anchos y largos
+        anchos.append(ancho)
+        alturas.append(alto)
+
+        # Separar los canales de color
+        canal_r = imagen[:, :, 0].flatten()
+        canal_g = imagen[:, :, 1].flatten()
+        canal_b = imagen[:, :, 2].flatten()
+
+        # Agregar los canales a las listas de todos los canales
+        todos_canales_r.extend(canal_r)
+        todos_canales_g.extend(canal_g)
+        todos_canales_b.extend(canal_b)
+
+    # Convertir listas a matrices NumPy
+    todos_canales_r = np.array(todos_canales_r)
+    todos_canales_g = np.array(todos_canales_g)
+    todos_canales_b = np.array(todos_canales_b)
+
+    # Calcular estadísticas finales
+    # color
+    media_r = np.mean(todos_canales_r)
+    min_r = np.min(todos_canales_r)
+    max_r = np.max(todos_canales_r)
+    std_r = np.std(todos_canales_r)
+    media_g = np.mean(todos_canales_g)
+    std_g = np.std(todos_canales_g)
+    media_b = np.mean(todos_canales_b)
+    std_b = np.std(todos_canales_b)
+    # Tamaño
+    # Anchos
+    min_ancho = np.min(anchos)
+    max_ancho = np.max(anchos)
+    media_ancho = np.mean(anchos)
+    median_ancho = np.median(anchos)
+    std_ancho = np.std(anchos)
+    # moda_ancho = stats.mode(anchos)
+    # Alto
+    min_alto = np.min(alturas)
+    max_alto = np.max(alturas)
+    media_alto = np.mean(alturas)
+    median_alto = np.median(alturas)
+    std_alto = np.std(alturas)
+    # moda_alto = stats.mode(alturas)
+
+    # Histogramas
+    plt.figure(figsize=(10, 5))
+
+    plt.subplot(1, 2, 1)
+    # plt.hist(anchos, bins=10, color="blue", alpha=0.7)
+    frecuencia, bins, _ = plt.hist(
+        anchos,
+        bins=30,
+        color="blue",
+    )  # alpha=0.7
+    # Encontrar el índice del bin con la frecuencia más alta
+    indice_max_frecuencia = np.argmax(frecuencia)
+    # Determinar el valor del bin correspondiente al índice máximo de frecuencia
+    bin_mas_repetido_ancho = bins[indice_max_frecuencia]
+    plt.title("Histograma de anchos")
+    plt.xlabel("Ancho")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.subplot(1, 2, 2)
+    # plt.hist(alturas, bins=10, color="green", alpha=0.7)
+    frecuencia, bins, _ = plt.hist(
+        alturas,
+        bins=30,
+        color="green",
+    )  # alpha=0.7
+    # Encontrar el índice del bin con la frecuencia más alta
+    indice_max_frecuencia = np.argmax(frecuencia)
+    # Determinar el valor del bin correspondiente al índice máximo de frecuencia
+    bin_mas_repetido_alto = bins[indice_max_frecuencia]
+    plt.title("Histograma de alturas")
+    plt.xlabel("Altura")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Imprimir resultados
+    # Color
+    print("Estadísticas de los canales RGB:")
+    print("Canal Rojo - Min:", min_r, "Max:", max_r)
+    print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
+    print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
+    print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
+    print()
+    # Tamaños
+    # Anchos
+    print("Valor mínimo del ancho:", min_ancho)
+    print("Valor máximo del ancho:", max_ancho)
+    print("Valor medio del ancho:", media_ancho)
+    print("Valor mediana del ancho:", median_ancho)
+    print("Valor std del ancho:", std_ancho)
+    print("Bin mas repetido ancho:", bin_mas_repetido_ancho)
+    # Largos
+    print("Valor mínimo del alto:", min_alto)
+    print("Valor máximo del alto:", max_alto)
+    print("Valor medio del alto:", media_alto)
+    print("Valor mediana del alto:", median_alto)
+    print("Valor std del alto:", std_alto)
+    print("Bin mas repetido alto:", bin_mas_repetido_alto)
+
+    return {
+        "color_r": {"media": media_r, "std": std_r},
+        "color_g": {
+            "media": media_g,
+            "std": std_g,
+        },
+        "color_b": {
+            "media": media_b,
+            "std": std_b,
+        },
+        "ancho": {
+            "min": min_ancho,
+            "max": max_ancho,
+            "media": media_ancho,
+            "median": median_ancho,
+            "std": std_ancho,
+        },
+        "alto": {
+            "min": min_alto,
+            "max": max_alto,
+            "media": media_alto,
+            "median": median_alto,
+            "std": std_alto,
+        },
+    }

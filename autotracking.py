@@ -63,6 +63,7 @@ def mypipeline_track(
         iou=iou,
         imgsz=imgsz,
         tracking=True,
+        # val_ratio=0.8,
     )
 
     print("pipeline ended")

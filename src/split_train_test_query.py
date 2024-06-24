@@ -3,7 +3,7 @@ import random
 import shutil
 
 
-def split_dataset(dataset_path, output_path):
+def split_dataset(dataset_path, output_path, split_ratio=0.5):
     # Crear directorios de salida
     output_train_path = os.path.join(output_path, "bounding_box_train")
     output_test_path = os.path.join(output_path, "bounding_box_test")
@@ -24,13 +24,22 @@ def split_dataset(dataset_path, output_path):
     random.seed(0)
     random.shuffle(person_ids)
 
-    # Asignar el ID sobrante al conjunto de entrenamiento si el número total de IDs es impar
-    if len(person_ids) % 2 == 1:
-        train_ids = person_ids[: len(person_ids) // 2 + 1]
-        test_ids = person_ids[len(person_ids) // 2 + 1 :]
-    else:
-        train_ids = person_ids[: len(person_ids) // 2]
-        test_ids = person_ids[len(person_ids) // 2 :]
+    # # Asignar el ID sobrante al conjunto de entrenamiento si el número total de IDs es impar
+    # if len(person_ids) % 2 == 1:
+    #     train_ids = person_ids[: len(person_ids) // 2 + 1]
+    #     test_ids = person_ids[len(person_ids) // 2 + 1 :]
+    # else:
+    #     train_ids = person_ids[: len(person_ids) // 2]
+    #     test_ids = person_ids[len(person_ids) // 2 :]
+
+    # Calcular el número de IDs para entrenamiento y prueba
+    total_persons = len(person_ids)
+    train_size = int(split_ratio * total_persons)
+    test_size = total_persons - train_size
+
+    # Asignar las identidades al conjunto de entrenamiento y prueba
+    train_ids = person_ids[:train_size]
+    test_ids = person_ids[train_size:]
 
     # Mover imágenes al directorio de entrenamiento o prueba
     for person_id in person_ids:
@@ -69,6 +78,8 @@ def split_dataset(dataset_path, output_path):
                     os.path.join(person_folder, query_image),
                     os.path.join(output_query_path, query_image),
                 )
+                # Eliminar la imagen de consulta original
+                os.remove(os.path.join(output_test_path, query_image))
             else:
                 print(
                     f"No se encontraron imágenes para la cámara {camera_ID} en la carpeta {person_folder}"

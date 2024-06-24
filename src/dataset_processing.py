@@ -21,6 +21,28 @@ def contains_multiple_bboxes(label_path):
         return num_bboxes > 1
 
 
+# Corregir coordenadas con valores negativos o superiores a 1
+def correct_bad_coords(label_dir):
+    for label_file in os.listdir(label_dir):
+        label_path = os.path.join(label_dir, label_file)
+        with open(label_path, "r") as f:
+            annotations = f.readlines()
+        updated_annotations = []
+        for annotation in annotations:
+            class_id, x, y, w, h = map(float, annotation.strip().split())
+            if x < 0:
+                x = 0
+            if y < 0:
+                y = 0
+            if x > 1:
+                x = 1
+            if y > 1:
+                y = 1
+            updated_annotations.append(f"{int(class_id)} {x} {y} {w} {h}\n")
+        with open(label_path, "w") as f:
+            f.writelines(updated_annotations)
+
+
 def remove_large_bboxes(label_dir, max_size):
     for label_file in os.listdir(label_dir):
         label_path = os.path.join(label_dir, label_file)
@@ -138,3 +160,5 @@ def run_processing_dataset(
     if remove_empty:
         remove_empty_labels(image_dir, label_dir, remove_multiple=remove_multiple)
         print("removed empty")
+    # correct_bad_coords(label_dir)
+    # print("corrected negative")
