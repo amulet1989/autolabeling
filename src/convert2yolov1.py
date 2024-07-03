@@ -107,7 +107,7 @@ def convert_to_yolov1_format(dataset_path, with_val=True):
     shutil.rmtree(yolov1_path)
 
 
-def convert_to_yolov8_format(yolov1_zip_path, output_dir):
+def convert_to_yolov8_format(yolov1_zip_path, output_dir, val=True):
     # Obtener el nombre del archivo ZIP sin extensión
     yolov1_dir_name = os.path.splitext(os.path.basename(yolov1_zip_path))[0]
 
@@ -130,10 +130,11 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(train_images_dir, exist_ok=True)
     os.makedirs(train_labels_dir, exist_ok=True)
-    os.makedirs(valid_images_dir, exist_ok=True)
-    os.makedirs(valid_labels_dir, exist_ok=True)
+    if val:
+        os.makedirs(valid_images_dir, exist_ok=True)
+        os.makedirs(valid_labels_dir, exist_ok=True)
 
-    # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
+        # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
     for filename in os.listdir(os.path.join(yolov8_dir, "obj_train_data")):
         if filename.endswith(".jpg"):
             image_path = os.path.join(yolov8_dir, "obj_train_data", filename)
@@ -147,17 +148,20 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
             shutil.move(label_path, os.path.join(train_labels_dir, label_filename))
 
     # Mover imágenes y etiquetas desde obj_Validation_data a valid/images y valid/labels
-    for filename in os.listdir(os.path.join(yolov8_dir, "obj_Validation_data")):
-        if filename.endswith(".jpg"):
-            image_path = os.path.join(yolov8_dir, "obj_Validation_data", filename)
-            label_filename = filename.replace(".jpg", ".txt")
-            label_path = os.path.join(yolov8_dir, "obj_Validation_data", label_filename)
+    if val:
+        for filename in os.listdir(os.path.join(yolov8_dir, "obj_Validation_data")):
+            if filename.endswith(".jpg"):
+                image_path = os.path.join(yolov8_dir, "obj_Validation_data", filename)
+                label_filename = filename.replace(".jpg", ".txt")
+                label_path = os.path.join(
+                    yolov8_dir, "obj_Validation_data", label_filename
+                )
 
-            # Mover imágenes
-            shutil.move(image_path, os.path.join(valid_images_dir, filename))
+                # Mover imágenes
+                shutil.move(image_path, os.path.join(valid_images_dir, filename))
 
-            # Mover etiquetas
-            shutil.move(label_path, os.path.join(valid_labels_dir, label_filename))
+                # Mover etiquetas
+                shutil.move(label_path, os.path.join(valid_labels_dir, label_filename))
 
     # Copiar data.names a obj.names
     data_names_path = os.path.join(yolov8_dir, "obj.names")
@@ -178,7 +182,10 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
             data_yaml_file.write(f"  - {class_name}\n")
         data_yaml_file.write(f"nc: {len(class_names)}\n")
         data_yaml_file.write(f"train: {os.path.join(yolov8_dir, 'train', 'images')}\n")
-        data_yaml_file.write(f"val: {os.path.join(yolov8_dir, 'valid', 'images')}\n")
+        if val:
+            data_yaml_file.write(
+                f"val: {os.path.join(yolov8_dir, 'valid', 'images')}\n"
+            )
 
     # Mover data.yaml a output_dir
     # data_yaml_path = os.path.join(yolov8_dir, "data", "data.yaml")
