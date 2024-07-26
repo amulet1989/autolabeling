@@ -179,3 +179,4 @@ runs/
 trained_models/
 *.pt
 *.ipynb
+yolo_predict.py
