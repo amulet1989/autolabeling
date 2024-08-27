@@ -395,3 +395,31 @@ def calcular_estadisticas_imagenes(directorio):
             "std": std_alto,
         },
     }
+
+
+## Muestrear directorio de imágenes ##
+
+
+def eliminar_cada_m(directorio, valor_muestreo):
+    """
+    Elimina las imágenes que no cumplen con el valor de muestreo.
+
+    Args:
+        directorio (str): Ruta al directorio que contiene las imágenes.
+        valor_muestreo (int): Valor para muestrear las imágenes.
+    """
+    # Obtener una lista de todos los archivos en el directorio
+    archivos = sorted(os.listdir(directorio))
+
+    # Filtrar solo las imágenes (puedes ajustar las extensiones según tus necesidades)
+    extensiones_validas = (".png", ".jpg", ".jpeg", ".bmp", ".tiff")
+    imagenes = [
+        archivo for archivo in archivos if archivo.lower().endswith(extensiones_validas)
+    ]
+
+    # Iterar sobre las imágenes y eliminar las que no cumplen con el valor de muestreo
+    for i, imagen in enumerate(imagenes):
+        # Mantener solo la imagen cada n-ésimo valor de muestreo
+        if (i + 1) % valor_muestreo != 0:
+            os.remove(os.path.join(directorio, imagen))
+            print(f"Imagen eliminada: {imagen}")
