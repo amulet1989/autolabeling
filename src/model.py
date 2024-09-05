@@ -379,15 +379,26 @@ def label_multiple_yolov8(
             imgsz=imgsz,
         )
     if tracking == False:
-        inferir_y_guardar(
-            valid_images,
-            modelyolo,
-            valid_images_folder,
-            valid_labels_folder,
-            confidence,
-            iou=iou,
-            imgsz=imgsz,
-        )
+        if segmentation == False:
+            inferir_y_guardar(
+                valid_images,
+                modelyolo,
+                valid_images_folder,
+                valid_labels_folder,
+                confidence,
+                iou=iou,
+                imgsz=imgsz,
+            )
+        else:
+            inferir_y_guardar_segmentacion(
+                valid_images,
+                modelyolo,
+                valid_images_folder,
+                valid_labels_folder,
+                confidence,
+                iou=iou,
+                imgsz=imgsz,
+            )
 
     # print(train_names)
     # Definir otras variables
