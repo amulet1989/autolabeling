@@ -269,6 +269,56 @@ def inferir_y_guardar(
     return results[0].names
 
 
+def inferir_y_guardar_segmentacion(
+    image_paths, model, image_folder, label_folder, confidence=0.7, iou=0.7, imgsz=1280
+):
+    """
+    Realiza la inferencia con un modelo Yolov8 de segmentación y guarda los resultados en formato txt para cada imagen.
+
+    Args:
+        image_paths (list): Lista de rutas a las imágenes.
+        model: Modelo Yolov8 entrenado para segmentación.
+        image_folder (str): Carpeta donde se guardarán las imágenes procesadas.
+        label_folder (str): Carpeta donde se guardarán los archivos .txt con las etiquetas de segmentación.
+        confidence (float): Umbral de confianza para las predicciones.
+        iou (float): Umbral de IoU para la supresión de no-máximos.
+        imgsz (int): Tamaño de las imágenes de entrada para el modelo.
+    """
+    for image_path in image_paths:
+        # Realizar la inferencia
+        results = model(source=image_path, conf=confidence, imgsz=imgsz)  # iou=iou
+
+        # Obtener el nombre de la imagen y copiarla a la carpeta destino
+        image_name = os.path.basename(image_path)
+        shutil.copy(image_path, image_folder)
+
+        # Crear el archivo txt para las etiquetas
+        txt_name = image_name.replace(".jpg", ".txt").replace(".png", ".txt")
+        txt_path = os.path.join(label_folder, txt_name)
+
+        with open(txt_path, "a") as f:
+            # Obtener las clases y las coordenadas de las máscaras
+            labels = results[0].boxes.cls  # Clases predichas
+            masks = results[0].masks
+            if masks is None:
+                continue
+            coordenadas = masks.xyn
+
+            for lab, mask in zip(labels, coordenadas):
+                # Escribir el ID de la clase
+                f.write(f"{int(lab)} ")
+
+                # Escribir las coordenadas normalizadas (Yolov8 requiere coordenadas normalizadas entre 0 y 1)
+                for point in mask:
+                    x, y = point
+                    f.write(f"{x:.6f} {y:.6f} ")
+
+                # Finalizar la línea para este polígono
+                f.write("\n")
+
+    return results[0].names  # Devolver los nombres de las clases del modelo
+
+
 def label_multiple_yolov8(
     model_path,
     input_folder: str,
@@ -278,6 +328,7 @@ def label_multiple_yolov8(
     imgsz=1280,
     tracking=False,
     val_ratio=0.2,
+    segmentation=False,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -307,15 +358,26 @@ def label_multiple_yolov8(
         valid_images_folder = crear_carpeta(valid, "images")
         valid_labels_folder = crear_carpeta(valid, "labels")
 
-    train_names = inferir_y_guardar(
-        train_images,
-        modelyolo,
-        train_images_folder,
-        train_labels_folder,
-        confidence,
-        iou=iou,
-        imgsz=imgsz,
-    )
+    if segmentation == False:
+        train_names = inferir_y_guardar(
+            train_images,
+            modelyolo,
+            train_images_folder,
+            train_labels_folder,
+            confidence,
+            iou=iou,
+            imgsz=imgsz,
+        )
+    else:
+        train_names = inferir_y_guardar_segmentacion(
+            train_images,
+            modelyolo,
+            train_images_folder,
+            train_labels_folder,
+            confidence,
+            iou=iou,
+            imgsz=imgsz,
+        )
     if tracking == False:
         inferir_y_guardar(
             valid_images,

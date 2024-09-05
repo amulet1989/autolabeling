@@ -398,8 +398,6 @@ def calcular_estadisticas_imagenes(directorio):
 
 
 ## Muestrear directorio de imágenes ##
-
-
 def eliminar_cada_m(directorio, valor_muestreo):
     """
     Elimina las imágenes que no cumplen con el valor de muestreo.

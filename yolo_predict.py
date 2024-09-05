@@ -4,15 +4,15 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/yolov8m_640x480_cf_9cam_v44.pt"
-)  # yolov8m_640x480_cf_9cam_v44
+    "trained_models/producto_cinta_yolov8seg_v2.pt"
+)  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v16
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
 # Create VideoCapture object
 # INPUT_VIDEO = seleccionar_video()
 # INPUT_IMAGE = seleccionar_imagen()
-INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9556/live1"
+INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9564/h263/ch1/sub/av_stream"
 
 
 # Read video
@@ -22,13 +22,13 @@ cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
 classes = 0
 # .track
-results = model.track(
+results = model(
     source=INPUT_VIDEO,  # INPUT_VIDEO / INPUT_IMAGE
     stream=True,  # True
     save=False,
     conf=0.4,
     imgsz=640,  # 704
-    iou=0.7,
+    # iou=0.7,
     # verbose=False,
     # classes=classes,
     show=True,
