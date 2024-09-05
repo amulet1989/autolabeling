@@ -98,6 +98,7 @@ import logging
 from typing import List
 from tqdm import tqdm
 import yaml
+import random
 
 
 def merge_datasets(dataset_paths: List, output_path: str, val=True):
@@ -421,3 +422,40 @@ def eliminar_cada_m(directorio, valor_muestreo):
         if (i + 1) % valor_muestreo != 0:
             os.remove(os.path.join(directorio, imagen))
             print(f"Imagen eliminada: {imagen}")
+
+
+# Función que recibe un directorio de imágenes y lo divide en dos carpetas (subsets train y validation)
+def dividir_en_subsets(directorio, porcentaje_validacion=0.2):
+    # Obtener una lista de todos los archivos en el directorio
+    archivos = os.listdir(directorio)
+
+    # Filtrar solo las imágenes (puedes ajustar las extensiones según tus necesidades)
+    extensiones_validas = (".png", ".jpg", ".jpeg", ".bmp", ".tiff")
+    imagenes = [
+        archivo for archivo in archivos if archivo.lower().endswith(extensiones_validas)
+    ]
+
+    # Calcular el número de imágenes para el subset de validación
+    num_validacion = int(len(imagenes) * porcentaje_validacion)
+
+    # Mezclar las imágenes
+    random.shuffle(imagenes)
+
+    # Crear los subdirectorios de train y validation
+    train_dir = os.path.join(directorio, "train")
+    valid_dir = os.path.join(directorio, "validation")
+    os.makedirs(train_dir, exist_ok=True)
+    os.makedirs(valid_dir, exist_ok=True)
+
+    # Mover las imágenes al subset de train o validation
+    for i, imagen in enumerate(imagenes):
+        src_path = os.path.join(directorio, imagen)
+        if i < num_validacion:
+            dest_path = os.path.join(valid_dir, imagen)
+        else:
+            dest_path = os.path.join(train_dir, imagen)
+        shutil.move(src_path, dest_path)
+
+    print(
+        f"Imágenes divididas en train y validation. {num_validacion} imágenes en validation."
+    )
