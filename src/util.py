@@ -284,14 +284,18 @@ def calcular_estadisticas_imagenes(directorio):
 
     # Calcular estadísticas finales
     # color
+    # min_r = np.min(todos_canales_r)
+    # max_r = np.max(todos_canales_r)
+
     media_r = np.mean(todos_canales_r)
-    min_r = np.min(todos_canales_r)
-    max_r = np.max(todos_canales_r)
     std_r = np.std(todos_canales_r)
+
     media_g = np.mean(todos_canales_g)
     std_g = np.std(todos_canales_g)
+
     media_b = np.mean(todos_canales_b)
     std_b = np.std(todos_canales_b)
+
     # Tamaño
     # Anchos
     min_ancho = np.min(anchos)
@@ -349,7 +353,7 @@ def calcular_estadisticas_imagenes(directorio):
     # Imprimir resultados
     # Color
     print("Estadísticas de los canales RGB:")
-    print("Canal Rojo - Min:", min_r, "Max:", max_r)
+    # print("Canal Rojo - Min:", min_r, "Max:", max_r)
     print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
     print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
     print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
@@ -399,15 +403,18 @@ def calcular_estadisticas_imagenes(directorio):
 
 # Función para calcular estadísticas de imágenes iterativamente
 def calcular_estadisticas_imagenes_incremental(directorio):
-    # Listar archivos en el directorio
+
     archivos = os.listdir(directorio)
 
     # Inicializar acumuladores para las estadísticas
     suma_r, suma_g, suma_b = 0, 0, 0
-    suma_cuadrada_r, suma_cuadrada_g, suma_cuadrada_b = 0, 0, 0
-    total_pixeles = 0
+    n_pixeles = 0
+    media_r, media_g, media_b = 0, 0, 0
+    varianza_r, varianza_g, varianza_b = 0, 0, 0
+    n_imagenes = 0
     suma_anchos, suma_alturas = 0, 0
-    suma_cuadrada_anchos, suma_cuadrada_alturas = 0, 0
+    media_ancho, media_alto = 0, 0
+    varianza_ancho, varianza_alto = 0, 0
     min_ancho, min_alto = float("inf"), float("inf")
     max_ancho, max_alto = 0, 0
 
@@ -417,28 +424,35 @@ def calcular_estadisticas_imagenes_incremental(directorio):
     # Iterar sobre cada imagen en el directorio
     for archivo in archivos:
         ruta_imagen = os.path.join(directorio, archivo)
-
-        # Leer la imagen usando OpenCV
         imagen = cv2.imread(ruta_imagen)
+
         if imagen is None:
-            continue  # Omitir si no se puede cargar la imagen
+            continue
 
-        # Obtener dimensiones de la imagen
         alto, ancho, _ = imagen.shape
+        n_imagenes += 1
 
-        # Acumular las dimensiones
+        # Acumular dimensiones
         suma_anchos += ancho
         suma_alturas += alto
-        suma_cuadrada_anchos += ancho**2
-        suma_cuadrada_alturas += alto**2
 
-        # Actualizar mínimos y máximos
+        if n_imagenes > 1:
+            delta_ancho = ancho - media_ancho
+            media_ancho += delta_ancho / n_imagenes
+            varianza_ancho += delta_ancho * (ancho - media_ancho)
+
+            delta_alto = alto - media_alto
+            media_alto += delta_alto / n_imagenes
+            varianza_alto += delta_alto * (alto - media_alto)
+        else:
+            media_ancho = ancho
+            media_alto = alto
+
         min_ancho = min(min_ancho, ancho)
         max_ancho = max(max_ancho, ancho)
         min_alto = min(min_alto, alto)
         max_alto = max(max_alto, alto)
 
-        # Guardar valores para los histogramas
         hist_ancho.append(ancho)
         hist_alto.append(alto)
 
@@ -447,49 +461,29 @@ def calcular_estadisticas_imagenes_incremental(directorio):
         canal_g = imagen[:, :, 1].flatten()
         canal_b = imagen[:, :, 2].flatten()
 
-        # Acumular estadísticas de cada canal
-        suma_r += np.sum(canal_r)
-        suma_g += np.sum(canal_g)
-        suma_b += np.sum(canal_b)
+        # Calcular estadísticas de canales usando Welford's Algorithm
+        for i in range(canal_r.size):
+            n_pixeles += 1
+            delta_r = canal_r[i] - media_r
+            media_r += delta_r / n_pixeles
+            varianza_r += delta_r * (canal_r[i] - media_r)
 
-        suma_cuadrada_r += np.sum(canal_r**2)
-        suma_cuadrada_g += np.sum(canal_g**2)
-        suma_cuadrada_b += np.sum(canal_b**2)
+            delta_g = canal_g[i] - media_g
+            media_g += delta_g / n_pixeles
+            varianza_g += delta_g * (canal_g[i] - media_g)
 
-        total_pixeles += canal_r.size
+            delta_b = canal_b[i] - media_b
+            media_b += delta_b / n_pixeles
+            varianza_b += delta_b * (canal_b[i] - media_b)
 
-    # Calcular estadísticas de los canales
-    media_r = suma_r / total_pixeles
-    media_g = suma_g / total_pixeles
-    media_b = suma_b / total_pixeles
+    # Desviaciones estándar
+    std_r = np.sqrt(varianza_r / n_pixeles)
+    std_g = np.sqrt(varianza_g / n_pixeles)
+    std_b = np.sqrt(varianza_b / n_pixeles)
 
-    varianza_r = (suma_cuadrada_r / total_pixeles) - (media_r**2)
-    varianza_g = (suma_cuadrada_g / total_pixeles) - (media_g**2)
-    varianza_b = (suma_cuadrada_b / total_pixeles) - (media_b**2)
-
-    # Asegurarnos de que las varianzas sean no negativas
-    varianza_r = max(varianza_r, 0)
-    varianza_g = max(varianza_g, 0)
-    varianza_b = max(varianza_b, 0)
-
-    std_r = np.sqrt(varianza_r)
-    std_g = np.sqrt(varianza_g)
-    std_b = np.sqrt(varianza_b)
-
-    # Calcular estadísticas de dimensiones
-    n_imagenes = len(archivos)
-    media_ancho = suma_anchos / n_imagenes
-    media_alto = suma_alturas / n_imagenes
-
-    varianza_ancho = (suma_cuadrada_anchos / n_imagenes) - (media_ancho**2)
-    varianza_alto = (suma_cuadrada_alturas / n_imagenes) - (media_alto**2)
-
-    # Asegurarnos de que las varianzas sean no negativas
-    varianza_ancho = max(varianza_ancho, 0)
-    varianza_alto = max(varianza_alto, 0)
-
-    std_ancho = np.sqrt(varianza_ancho)
-    std_alto = np.sqrt(varianza_alto)
+    # Desviaciones estándar de dimensiones
+    std_ancho = np.sqrt(varianza_ancho / n_imagenes)
+    std_alto = np.sqrt(varianza_alto / n_imagenes)
 
     # Histogramas
     plt.figure(figsize=(10, 5))
