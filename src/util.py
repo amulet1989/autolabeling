@@ -242,7 +242,6 @@ def seleccionar_video():
 
 
 # Función para calcular estadísticas de imágenes
-# Función para calcular estadísticas de imágenes
 def calcular_estadisticas_imagenes(directorio):
     # Listar archivos en el directorio
     archivos = os.listdir(directorio)
@@ -393,6 +392,145 @@ def calcular_estadisticas_imagenes(directorio):
             "max": max_alto,
             "media": media_alto,
             "median": median_alto,
+            "std": std_alto,
+        },
+    }
+
+
+# Función para calcular estadísticas de imágenes iterativamente
+def calcular_estadisticas_imagenes_incremental(directorio):
+    # Listar archivos en el directorio
+    archivos = os.listdir(directorio)
+
+    # Inicializar acumuladores para las estadísticas
+    suma_r, suma_g, suma_b = 0, 0, 0
+    suma_cuadrada_r, suma_cuadrada_g, suma_cuadrada_b = 0, 0, 0
+    total_pixeles = 0
+    suma_anchos, suma_alturas = 0, 0
+    suma_cuadrada_anchos, suma_cuadrada_alturas = 0, 0
+    min_ancho, min_alto = float("inf"), float("inf")
+    max_ancho, max_alto = 0, 0
+
+    hist_ancho = []
+    hist_alto = []
+
+    # Iterar sobre cada imagen en el directorio
+    for archivo in archivos:
+        ruta_imagen = os.path.join(directorio, archivo)
+
+        # Leer la imagen usando OpenCV
+        imagen = cv2.imread(ruta_imagen)
+        if imagen is None:
+            continue  # Omitir si no se puede cargar la imagen
+
+        # Obtener dimensiones de la imagen
+        alto, ancho, _ = imagen.shape
+
+        # Acumular las dimensiones
+        suma_anchos += ancho
+        suma_alturas += alto
+        suma_cuadrada_anchos += ancho**2
+        suma_cuadrada_alturas += alto**2
+
+        # Actualizar mínimos y máximos
+        min_ancho = min(min_ancho, ancho)
+        max_ancho = max(max_ancho, ancho)
+        min_alto = min(min_alto, alto)
+        max_alto = max(max_alto, alto)
+
+        # Guardar valores para los histogramas
+        hist_ancho.append(ancho)
+        hist_alto.append(alto)
+
+        # Separar los canales de color
+        canal_r = imagen[:, :, 0].flatten()
+        canal_g = imagen[:, :, 1].flatten()
+        canal_b = imagen[:, :, 2].flatten()
+
+        # Acumular estadísticas de cada canal
+        suma_r += np.sum(canal_r)
+        suma_g += np.sum(canal_g)
+        suma_b += np.sum(canal_b)
+
+        suma_cuadrada_r += np.sum(canal_r**2)
+        suma_cuadrada_g += np.sum(canal_g**2)
+        suma_cuadrada_b += np.sum(canal_b**2)
+
+        total_pixeles += canal_r.size
+
+    # Calcular estadísticas de los canales
+    media_r = suma_r / total_pixeles
+    media_g = suma_g / total_pixeles
+    media_b = suma_b / total_pixeles
+
+    varianza_r = (suma_cuadrada_r / total_pixeles) - (media_r**2)
+    varianza_g = (suma_cuadrada_g / total_pixeles) - (media_g**2)
+    varianza_b = (suma_cuadrada_b / total_pixeles) - (media_b**2)
+
+    std_r = np.sqrt(varianza_r)
+    std_g = np.sqrt(varianza_g)
+    std_b = np.sqrt(varianza_b)
+
+    # Calcular estadísticas de dimensiones
+    n_imagenes = len(archivos)
+    media_ancho = suma_anchos / n_imagenes
+    media_alto = suma_alturas / n_imagenes
+
+    varianza_ancho = (suma_cuadrada_anchos / n_imagenes) - (media_ancho**2)
+    varianza_alto = (suma_cuadrada_alturas / n_imagenes) - (media_alto**2)
+
+    std_ancho = np.sqrt(varianza_ancho)
+    std_alto = np.sqrt(varianza_alto)
+
+    # Histogramas
+    plt.figure(figsize=(10, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.hist(hist_ancho, bins=30, color="blue")
+    plt.title("Histograma de anchos")
+    plt.xlabel("Ancho")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.subplot(1, 2, 2)
+    plt.hist(hist_alto, bins=30, color="green")
+    plt.title("Histograma de alturas")
+    plt.xlabel("Altura")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Imprimir resultados
+    print("Estadísticas de los canales RGB:")
+    print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
+    print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
+    print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
+    print()
+    print("Valor mínimo del ancho:", min_ancho)
+    print("Valor máximo del ancho:", max_ancho)
+    print("Valor medio del ancho:", media_ancho)
+    print("Valor std del ancho:", std_ancho)
+    print("Valor mínimo del alto:", min_alto)
+    print("Valor máximo del alto:", max_alto)
+    print("Valor medio del alto:", media_alto)
+    print("Valor std del alto:", std_alto)
+
+    return {
+        "color_r": {"media": media_r, "std": std_r},
+        "color_g": {"media": media_g, "std": std_g},
+        "color_b": {"media": media_b, "std": std_b},
+        "ancho": {
+            "min": min_ancho,
+            "max": max_ancho,
+            "media": media_ancho,
+            "std": std_ancho,
+        },
+        "alto": {
+            "min": min_alto,
+            "max": max_alto,
+            "media": media_alto,
             "std": std_alto,
         },
     }
