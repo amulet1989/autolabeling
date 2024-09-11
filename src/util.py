@@ -467,6 +467,11 @@ def calcular_estadisticas_imagenes_incremental(directorio):
     varianza_g = (suma_cuadrada_g / total_pixeles) - (media_g**2)
     varianza_b = (suma_cuadrada_b / total_pixeles) - (media_b**2)
 
+    # Asegurarnos de que las varianzas sean no negativas
+    varianza_r = max(varianza_r, 0)
+    varianza_g = max(varianza_g, 0)
+    varianza_b = max(varianza_b, 0)
+
     std_r = np.sqrt(varianza_r)
     std_g = np.sqrt(varianza_g)
     std_b = np.sqrt(varianza_b)
@@ -478,6 +483,10 @@ def calcular_estadisticas_imagenes_incremental(directorio):
 
     varianza_ancho = (suma_cuadrada_anchos / n_imagenes) - (media_ancho**2)
     varianza_alto = (suma_cuadrada_alturas / n_imagenes) - (media_alto**2)
+
+    # Asegurarnos de que las varianzas sean no negativas
+    varianza_ancho = max(varianza_ancho, 0)
+    varianza_alto = max(varianza_alto, 0)
 
     std_ancho = np.sqrt(varianza_ancho)
     std_alto = np.sqrt(varianza_alto)
