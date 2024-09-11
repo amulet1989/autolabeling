@@ -4,7 +4,7 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/producto_cinta_yolov8seg_v2.pt"
+    "trained_models/producto_cinta_yolov8seg_v3.pt"
 )  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v16
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
@@ -12,7 +12,7 @@ model = YOLO(
 # Create VideoCapture object
 # INPUT_VIDEO = seleccionar_video()
 # INPUT_IMAGE = seleccionar_imagen()
-INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9564/h263/ch1/sub/av_stream"
+INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9565/h263/ch1/sub/av_stream"
 
 
 # Read video
@@ -32,6 +32,8 @@ results = model(
     # verbose=False,
     # classes=classes,
     show=True,
+    show_boxes=False,
+    retina_masks=True,
 )  # generator of Results objects
 
 for r in results:
