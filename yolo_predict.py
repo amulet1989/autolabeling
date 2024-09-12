@@ -12,7 +12,7 @@ model = YOLO(
 # Create VideoCapture object
 # INPUT_VIDEO = seleccionar_video()
 # INPUT_IMAGE = seleccionar_imagen()
-INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9565/h263/ch1/sub/av_stream"
+INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9563/h263/ch1/sub/av_stream"
 
 
 # Read video

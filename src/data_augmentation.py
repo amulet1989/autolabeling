@@ -370,7 +370,7 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 noise_limit=(0.9, 1.1),
             ),
             # A.Flip(always_apply=False, p=0.5),
-            A.VerticalFlip(always_apply=False, p=0.5),
+            A.HorizontalFlip(always_apply=False, p=0.5),
             A.MotionBlur(
                 always_apply=False, p=0.2, blur_limit=(3, 7), allow_shifted=True
             ),
@@ -379,6 +379,17 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 p=0.5,
                 interpolation=0,
                 scale_limit=(-0.09999999999999998, 0.10000000000000009),
+            ),
+            A.Perspective(
+                always_apply=False,
+                p=0.5,
+                scale=(0.05, 0.1),
+                keep_size=0,
+                pad_mode=0,
+                pad_val=(0, 0, 0),
+                mask_pad_val=0,
+                fit_output=0,
+                interpolation=0,
             ),
             A.ToGray(always_apply=False, p=0.1),
             LocalGrayscalePatchReplacement(probability=1.0, p=0.4),
