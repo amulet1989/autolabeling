@@ -98,6 +98,7 @@ import logging
 from typing import List
 from tqdm import tqdm
 import yaml
+import random
 
 
 def merge_datasets(dataset_paths: List, output_path: str, val=True):
@@ -241,7 +242,6 @@ def seleccionar_video():
 
 
 # Función para calcular estadísticas de imágenes
-# Función para calcular estadísticas de imágenes
 def calcular_estadisticas_imagenes(directorio):
     # Listar archivos en el directorio
     archivos = os.listdir(directorio)
@@ -284,14 +284,18 @@ def calcular_estadisticas_imagenes(directorio):
 
     # Calcular estadísticas finales
     # color
+    # min_r = np.min(todos_canales_r)
+    # max_r = np.max(todos_canales_r)
+
     media_r = np.mean(todos_canales_r)
-    min_r = np.min(todos_canales_r)
-    max_r = np.max(todos_canales_r)
     std_r = np.std(todos_canales_r)
+
     media_g = np.mean(todos_canales_g)
     std_g = np.std(todos_canales_g)
+
     media_b = np.mean(todos_canales_b)
     std_b = np.std(todos_canales_b)
+
     # Tamaño
     # Anchos
     min_ancho = np.min(anchos)
@@ -349,7 +353,7 @@ def calcular_estadisticas_imagenes(directorio):
     # Imprimir resultados
     # Color
     print("Estadísticas de los canales RGB:")
-    print("Canal Rojo - Min:", min_r, "Max:", max_r)
+    # print("Canal Rojo - Min:", min_r, "Max:", max_r)
     print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
     print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
     print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
@@ -395,3 +399,204 @@ def calcular_estadisticas_imagenes(directorio):
             "std": std_alto,
         },
     }
+
+
+# Función para calcular estadísticas de imágenes iterativamente
+def calcular_estadisticas_imagenes_incremental(directorio):
+
+    archivos = os.listdir(directorio)
+
+    # Inicializar acumuladores para las estadísticas
+    suma_r, suma_g, suma_b = 0, 0, 0
+    n_pixeles = 0
+    media_r, media_g, media_b = 0, 0, 0
+    varianza_r, varianza_g, varianza_b = 0, 0, 0
+    n_imagenes = 0
+    suma_anchos, suma_alturas = 0, 0
+    media_ancho, media_alto = 0, 0
+    varianza_ancho, varianza_alto = 0, 0
+    min_ancho, min_alto = float("inf"), float("inf")
+    max_ancho, max_alto = 0, 0
+
+    hist_ancho = []
+    hist_alto = []
+
+    # Iterar sobre cada imagen en el directorio
+    for archivo in archivos:
+        ruta_imagen = os.path.join(directorio, archivo)
+        imagen = cv2.imread(ruta_imagen)
+
+        if imagen is None:
+            continue
+
+        alto, ancho, _ = imagen.shape
+        n_imagenes += 1
+
+        # Acumular dimensiones
+        suma_anchos += ancho
+        suma_alturas += alto
+
+        if n_imagenes > 1:
+            delta_ancho = ancho - media_ancho
+            media_ancho += delta_ancho / n_imagenes
+            varianza_ancho += delta_ancho * (ancho - media_ancho)
+
+            delta_alto = alto - media_alto
+            media_alto += delta_alto / n_imagenes
+            varianza_alto += delta_alto * (alto - media_alto)
+        else:
+            media_ancho = ancho
+            media_alto = alto
+
+        min_ancho = min(min_ancho, ancho)
+        max_ancho = max(max_ancho, ancho)
+        min_alto = min(min_alto, alto)
+        max_alto = max(max_alto, alto)
+
+        hist_ancho.append(ancho)
+        hist_alto.append(alto)
+
+        # Separar los canales de color
+        canal_r = imagen[:, :, 0].flatten()
+        canal_g = imagen[:, :, 1].flatten()
+        canal_b = imagen[:, :, 2].flatten()
+
+        # Calcular estadísticas de canales usando Welford's Algorithm
+        for i in range(canal_r.size):
+            n_pixeles += 1
+            delta_r = canal_r[i] - media_r
+            media_r += delta_r / n_pixeles
+            varianza_r += delta_r * (canal_r[i] - media_r)
+
+            delta_g = canal_g[i] - media_g
+            media_g += delta_g / n_pixeles
+            varianza_g += delta_g * (canal_g[i] - media_g)
+
+            delta_b = canal_b[i] - media_b
+            media_b += delta_b / n_pixeles
+            varianza_b += delta_b * (canal_b[i] - media_b)
+
+    # Desviaciones estándar
+    std_r = np.sqrt(varianza_r / n_pixeles)
+    std_g = np.sqrt(varianza_g / n_pixeles)
+    std_b = np.sqrt(varianza_b / n_pixeles)
+
+    # Desviaciones estándar de dimensiones
+    std_ancho = np.sqrt(varianza_ancho / n_imagenes)
+    std_alto = np.sqrt(varianza_alto / n_imagenes)
+
+    # Histogramas
+    plt.figure(figsize=(10, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.hist(hist_ancho, bins=30, color="blue")
+    plt.title("Histograma de anchos")
+    plt.xlabel("Ancho")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.subplot(1, 2, 2)
+    plt.hist(hist_alto, bins=30, color="green")
+    plt.title("Histograma de alturas")
+    plt.xlabel("Altura")
+    plt.ylabel("Frecuencia")
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
+    # Imprimir resultados
+    print("Estadísticas de los canales RGB:")
+    print("Canal Rojo - Media:", media_r / 255, "Desviación estándar:", std_r / 255)
+    print("Canal Verde - Media:", media_g / 255, "Desviación estándar:", std_g / 255)
+    print("Canal Azul - Media:", media_b / 255, "Desviación estándar:", std_b / 255)
+    print()
+    print("Valor mínimo del ancho:", min_ancho)
+    print("Valor máximo del ancho:", max_ancho)
+    print("Valor medio del ancho:", media_ancho)
+    print("Valor std del ancho:", std_ancho)
+    print("Valor mínimo del alto:", min_alto)
+    print("Valor máximo del alto:", max_alto)
+    print("Valor medio del alto:", media_alto)
+    print("Valor std del alto:", std_alto)
+
+    return {
+        "color_r": {"media": media_r, "std": std_r},
+        "color_g": {"media": media_g, "std": std_g},
+        "color_b": {"media": media_b, "std": std_b},
+        "ancho": {
+            "min": min_ancho,
+            "max": max_ancho,
+            "media": media_ancho,
+            "std": std_ancho,
+        },
+        "alto": {
+            "min": min_alto,
+            "max": max_alto,
+            "media": media_alto,
+            "std": std_alto,
+        },
+    }
+
+
+## Muestrear directorio de imágenes ##
+def eliminar_cada_m(directorio, valor_muestreo):
+    """
+    Elimina las imágenes que no cumplen con el valor de muestreo.
+
+    Args:
+        directorio (str): Ruta al directorio que contiene las imágenes.
+        valor_muestreo (int): Valor para muestrear las imágenes.
+    """
+    # Obtener una lista de todos los archivos en el directorio
+    archivos = sorted(os.listdir(directorio))
+
+    # Filtrar solo las imágenes (puedes ajustar las extensiones según tus necesidades)
+    extensiones_validas = (".png", ".jpg", ".jpeg", ".bmp", ".tiff")
+    imagenes = [
+        archivo for archivo in archivos if archivo.lower().endswith(extensiones_validas)
+    ]
+
+    # Iterar sobre las imágenes y eliminar las que no cumplen con el valor de muestreo
+    for i, imagen in enumerate(imagenes):
+        # Mantener solo la imagen cada n-ésimo valor de muestreo
+        if (i + 1) % valor_muestreo != 0:
+            os.remove(os.path.join(directorio, imagen))
+            print(f"Imagen eliminada: {imagen}")
+
+
+# Función que recibe un directorio de imágenes y lo divide en dos carpetas (subsets train y validation)
+def dividir_en_subsets(directorio, porcentaje_validacion=0.2):
+    # Obtener una lista de todos los archivos en el directorio
+    archivos = os.listdir(directorio)
+
+    # Filtrar solo las imágenes (puedes ajustar las extensiones según tus necesidades)
+    extensiones_validas = (".png", ".jpg", ".jpeg", ".bmp", ".tiff")
+    imagenes = [
+        archivo for archivo in archivos if archivo.lower().endswith(extensiones_validas)
+    ]
+
+    # Calcular el número de imágenes para el subset de validación
+    num_validacion = int(len(imagenes) * porcentaje_validacion)
+
+    # Mezclar las imágenes
+    random.shuffle(imagenes)
+
+    # Crear los subdirectorios de train y validation
+    train_dir = os.path.join(directorio, "train")
+    valid_dir = os.path.join(directorio, "validation")
+    os.makedirs(train_dir, exist_ok=True)
+    os.makedirs(valid_dir, exist_ok=True)
+
+    # Mover las imágenes al subset de train o validation
+    for i, imagen in enumerate(imagenes):
+        src_path = os.path.join(directorio, imagen)
+        if i < num_validacion:
+            dest_path = os.path.join(valid_dir, imagen)
+        else:
+            dest_path = os.path.join(train_dir, imagen)
+        shutil.move(src_path, dest_path)
+
+    print(
+        f"Imágenes divididas en train y validation. {num_validacion} imágenes en validation."
+    )

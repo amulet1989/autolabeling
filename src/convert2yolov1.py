@@ -5,6 +5,155 @@ import zipfile
 import argparse
 
 
+###################################
+## Modleos datasets de segmentacion ##
+#######################################
+def ultralytics_to_cvat(ultralytics_dataset_path, output_path):
+    # Crear las carpetas de salida
+    os.makedirs(output_path, exist_ok=True)
+    os.makedirs(os.path.join(output_path, "images/Train"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "images/Validation"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "labels/Train"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "labels/Validation"), exist_ok=True)
+
+    # Cargar el archivo data.yaml de Ultralytics
+    with open(os.path.join(ultralytics_dataset_path, "data.yaml"), "r") as f:
+        data = yaml.safe_load(f)
+
+    class_names = data["names"]
+
+    # Procesar Train
+    train_image_dir = os.path.join(ultralytics_dataset_path, "train/images")
+    train_label_dir = os.path.join(ultralytics_dataset_path, "train/labels")
+
+    train_txt_path = os.path.join(output_path, "Train.txt")
+    with open(train_txt_path, "w") as f_train:
+        for image_name in os.listdir(train_image_dir):
+            image_path = os.path.join("images/Train", image_name)
+            f_train.write(f"{image_path}\n")
+            # Copiar imágenes y etiquetas
+            shutil.copy(
+                os.path.join(train_image_dir, image_name),
+                os.path.join(output_path, image_path),
+            )
+            label_name = image_name.replace(".jpg", ".txt").replace(".png", ".txt")
+            shutil.copy(
+                os.path.join(train_label_dir, label_name),
+                os.path.join(output_path, "labels/Train", label_name),
+            )
+
+    # Procesar Validation (si existe)
+    if "val" in data:
+        val_image_dir = os.path.join(ultralytics_dataset_path, "valid/images")
+        val_label_dir = os.path.join(ultralytics_dataset_path, "valid/labels")
+
+        val_txt_path = os.path.join(output_path, "Validation.txt")
+        with open(val_txt_path, "w") as f_val:
+            for image_name in os.listdir(val_image_dir):
+                image_path = os.path.join("images/Validation", image_name)
+                f_val.write(f"{image_path}\n")
+                # Copiar imágenes y etiquetas
+                shutil.copy(
+                    os.path.join(val_image_dir, image_name),
+                    os.path.join(output_path, image_path),
+                )
+                label_name = image_name.replace(".jpg", ".txt").replace(".png", ".txt")
+                shutil.copy(
+                    os.path.join(val_label_dir, label_name),
+                    os.path.join(output_path, "labels/Validation", label_name),
+                )
+
+    # Crear el archivo data.yaml para CVAT
+    cvat_data = {
+        "Train": "Train.txt",
+        "Validation": "Validation.txt" if "val" in data else None,
+        "names": {i: name for i, name in enumerate(class_names)},
+        "path": ".",
+    }
+
+    with open(os.path.join(output_path, "data.yaml"), "w") as f:
+        yaml.dump(cvat_data, f)
+
+
+def cvat_to_ultralytics(cvat_dataset_path, output_path):
+    # Crear las carpetas de salida
+    os.makedirs(os.path.join(output_path, "train/images"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "train/labels"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "valid/images"), exist_ok=True)
+    os.makedirs(os.path.join(output_path, "valid/labels"), exist_ok=True)
+
+    # Cargar el archivo data.yaml de CVAT
+    with open(os.path.join(cvat_dataset_path, "data.yaml"), "r") as f:
+        data = yaml.safe_load(f)
+
+    class_names = data["names"]
+    output_rel_path = os.path.relpath(output_path)
+
+    def replace_extension(image_name):
+        # Reemplaza la extensión de la imagen con .txt
+        return os.path.splitext(image_name)[0] + ".txt"
+
+    # Procesar las imágenes y labels de Train
+    with open(os.path.join(cvat_dataset_path, "Train.txt"), "r") as f:
+        train_images = f.read().splitlines()
+
+    for image_path in train_images:
+        # Ajustar la ruta: eliminar "data/" del inicio de la ruta
+        image_path = image_path.replace("data/", "")
+        image_name = os.path.basename(image_path)
+        label_name = replace_extension(image_name)
+
+        # Nueva ruta para la imagen en el directorio de salida
+        new_image_path = os.path.join(output_path, "train/images", image_name)
+
+        # Copiar la imagen y el archivo de etiquetas
+        shutil.copy(os.path.join(cvat_dataset_path, image_path), new_image_path)
+        shutil.copy(
+            os.path.join(cvat_dataset_path, "labels/Train", label_name),
+            os.path.join(output_path, "train/labels", label_name),
+        )
+
+    # Procesar las imágenes y labels de Validation (si existen)
+    validation_images_path = os.path.join(cvat_dataset_path, "Validation.txt")
+    if os.path.exists(validation_images_path):
+        with open(validation_images_path, "r") as f:
+            validation_images = f.read().splitlines()
+
+        for image_path in validation_images:
+            # Ajustar la ruta: eliminar "data/" del inicio de la ruta
+            image_path = image_path.replace("data/", "")
+            image_name = os.path.basename(image_path)
+            label_name = replace_extension(image_name)
+
+            # Nueva ruta para la imagen en el directorio de salida
+            new_image_path = os.path.join(output_path, "valid/images", image_name)
+
+            # Copiar la imagen y el archivo de etiquetas
+            shutil.copy(os.path.join(cvat_dataset_path, image_path), new_image_path)
+            shutil.copy(
+                os.path.join(cvat_dataset_path, "labels/Validation", label_name),
+                os.path.join(output_path, "valid/labels", label_name),
+            )
+
+    # Crear el archivo data.yaml para Ultralytics
+    ultralytics_data = {
+        "names": class_names,
+        "nc": len(class_names),
+        "train": os.path.join(output_rel_path, "train"),
+        "val": (
+            os.path.join(output_rel_path, "valid")
+            if os.path.exists(validation_images_path)
+            else None
+        ),
+    }
+
+    with open(os.path.join(output_path, "data.yaml"), "w") as f:
+        yaml.dump(ultralytics_data, f)
+
+
+###################################
+## Modelos datasets de deteccion ##
+#######################################
 def convert_to_yolov1_format(dataset_path, with_val=True):
     # Crear una carpeta con el sufijo "_YOLOV1"
     yolov1_path = dataset_path + "_YOLOV1"
@@ -107,7 +256,7 @@ def convert_to_yolov1_format(dataset_path, with_val=True):
     shutil.rmtree(yolov1_path)
 
 
-def convert_to_yolov8_format(yolov1_zip_path, output_dir):
+def convert_to_yolov8_format(yolov1_zip_path, output_dir, val=True):
     # Obtener el nombre del archivo ZIP sin extensión
     yolov1_dir_name = os.path.splitext(os.path.basename(yolov1_zip_path))[0]
 
@@ -130,10 +279,11 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(train_images_dir, exist_ok=True)
     os.makedirs(train_labels_dir, exist_ok=True)
-    os.makedirs(valid_images_dir, exist_ok=True)
-    os.makedirs(valid_labels_dir, exist_ok=True)
+    if val:
+        os.makedirs(valid_images_dir, exist_ok=True)
+        os.makedirs(valid_labels_dir, exist_ok=True)
 
-    # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
+        # Mover imágenes y etiquetas desde obj_Train_data a train/images y train/labels
     for filename in os.listdir(os.path.join(yolov8_dir, "obj_train_data")):
         if filename.endswith(".jpg"):
             image_path = os.path.join(yolov8_dir, "obj_train_data", filename)
@@ -147,17 +297,20 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
             shutil.move(label_path, os.path.join(train_labels_dir, label_filename))
 
     # Mover imágenes y etiquetas desde obj_Validation_data a valid/images y valid/labels
-    for filename in os.listdir(os.path.join(yolov8_dir, "obj_Validation_data")):
-        if filename.endswith(".jpg"):
-            image_path = os.path.join(yolov8_dir, "obj_Validation_data", filename)
-            label_filename = filename.replace(".jpg", ".txt")
-            label_path = os.path.join(yolov8_dir, "obj_Validation_data", label_filename)
+    if val:
+        for filename in os.listdir(os.path.join(yolov8_dir, "obj_Validation_data")):
+            if filename.endswith(".jpg"):
+                image_path = os.path.join(yolov8_dir, "obj_Validation_data", filename)
+                label_filename = filename.replace(".jpg", ".txt")
+                label_path = os.path.join(
+                    yolov8_dir, "obj_Validation_data", label_filename
+                )
 
-            # Mover imágenes
-            shutil.move(image_path, os.path.join(valid_images_dir, filename))
+                # Mover imágenes
+                shutil.move(image_path, os.path.join(valid_images_dir, filename))
 
-            # Mover etiquetas
-            shutil.move(label_path, os.path.join(valid_labels_dir, label_filename))
+                # Mover etiquetas
+                shutil.move(label_path, os.path.join(valid_labels_dir, label_filename))
 
     # Copiar data.names a obj.names
     data_names_path = os.path.join(yolov8_dir, "obj.names")
@@ -178,7 +331,10 @@ def convert_to_yolov8_format(yolov1_zip_path, output_dir):
             data_yaml_file.write(f"  - {class_name}\n")
         data_yaml_file.write(f"nc: {len(class_names)}\n")
         data_yaml_file.write(f"train: {os.path.join(yolov8_dir, 'train', 'images')}\n")
-        data_yaml_file.write(f"val: {os.path.join(yolov8_dir, 'valid', 'images')}\n")
+        if val:
+            data_yaml_file.write(
+                f"val: {os.path.join(yolov8_dir, 'valid', 'images')}\n"
+            )
 
     # Mover data.yaml a output_dir
     # data_yaml_path = os.path.join(yolov8_dir, "data", "data.yaml")

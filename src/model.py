@@ -201,8 +201,8 @@ def inferir_y_guardar(
     image_paths, model, imag_folder, label_folder, confidence=0.7, iou=0.7, imgsz=1280
 ):
     # Para visualizar
-    win_name = "Camera Preview"
-    cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
+    # win_name = "Camera Preview"
+    # cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
 
     # Inferencia
     for image_path in image_paths:
@@ -221,52 +221,102 @@ def inferir_y_guardar(
             for lab, (x, y, w, h) in zip(label, coordenadas):
                 f.write("{} {} {} {} {}\n".format(int(lab), x, y, w, h))
 
-        # Visualiza
-        for r in results:
-            boxes = r.boxes  # Boxes object for bbox outputs
+    #     # Visualiza
+    #     for r in results:
+    #         boxes = r.boxes  # Boxes object for bbox outputs
 
-            image = r.orig_img.copy()
-            if boxes.cls.numel() > 0:
-                classe = boxes.cls.tolist()
-                label = r.names
-                scores = boxes.conf.tolist()  # Confidence scores
+    #         image = r.orig_img.copy()
+    #         if boxes.cls.numel() > 0:
+    #             classe = boxes.cls.tolist()
+    #             label = r.names
+    #             scores = boxes.conf.tolist()  # Confidence scores
 
-                # Draw BBoxes on the image
-                # for box, label, score in zip(boxes, labels, scores):
-                for i, box in enumerate(boxes.xyxy):
-                    x1, y1, x2, y2 = map(int, box)  # box
-                    color = (0, 255, 0)  # Green color
-                    thickness = 2
+    #             # Draw BBoxes on the image
+    #             # for box, label, score in zip(boxes, labels, scores):
+    #             for i, box in enumerate(boxes.xyxy):
+    #                 x1, y1, x2, y2 = map(int, box)  # box
+    #                 color = (0, 255, 0)  # Green color
+    #                 thickness = 2
 
-                    cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
+    #                 cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
 
-                    text = f"{label[int(classe[i])]} ({scores[i]:.2f})"
-                    # print(text)
+    #                 text = f"{label[int(classe[i])]} ({scores[i]:.2f})"
+    #                 # print(text)
 
-                    cv2.putText(
-                        image,
-                        text,
-                        (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        1,
-                        color,
-                        thickness,
-                    )
+    #                 cv2.putText(
+    #                     image,
+    #                     text,
+    #                     (x1, y1 - 10),
+    #                     cv2.FONT_HERSHEY_SIMPLEX,
+    #                     1,
+    #                     color,
+    #                     thickness,
+    #                 )
 
-            cv2.imshow(win_name, image)
+    #         cv2.imshow(win_name, image)
 
-            # Wait for a key press and check the pressed key
-            key = cv2.waitKey(1)  # & 0xFF
-            if key == ord("q"):  # Press 'q' to exit
-                break
-            elif key == ord("n"):  # Press 'n' to show the next image
-                continue
+    #         # Wait for a key press and check the pressed key
+    #         key = cv2.waitKey(1)  # & 0xFF
+    #         if key == ord("q"):  # Press 'q' to exit
+    #             break
+    #         elif key == ord("n"):  # Press 'n' to show the next image
+    #             continue
 
-    # Release VideoCapture and destroy windows
-    # cap.release()
-    cv2.destroyAllWindows()
+    # # Release VideoCapture and destroy windows
+    # # cap.release()
+    # cv2.destroyAllWindows()
 
     return results[0].names
+
+
+def inferir_y_guardar_segmentacion(
+    image_paths, model, image_folder, label_folder, confidence=0.7, iou=0.7, imgsz=1280
+):
+    """
+    Realiza la inferencia con un modelo Yolov8 de segmentación y guarda los resultados en formato txt para cada imagen.
+
+    Args:
+        image_paths (list): Lista de rutas a las imágenes.
+        model: Modelo Yolov8 entrenado para segmentación.
+        image_folder (str): Carpeta donde se guardarán las imágenes procesadas.
+        label_folder (str): Carpeta donde se guardarán los archivos .txt con las etiquetas de segmentación.
+        confidence (float): Umbral de confianza para las predicciones.
+        iou (float): Umbral de IoU para la supresión de no-máximos.
+        imgsz (int): Tamaño de las imágenes de entrada para el modelo.
+    """
+    for image_path in image_paths:
+        # Realizar la inferencia
+        results = model(source=image_path, conf=confidence, imgsz=imgsz)  # iou=iou
+
+        # Obtener el nombre de la imagen y copiarla a la carpeta destino
+        image_name = os.path.basename(image_path)
+        shutil.copy(image_path, image_folder)
+
+        # Crear el archivo txt para las etiquetas
+        txt_name = image_name.replace(".jpg", ".txt").replace(".png", ".txt")
+        txt_path = os.path.join(label_folder, txt_name)
+
+        with open(txt_path, "a") as f:
+            # Obtener las clases y las coordenadas de las máscaras
+            labels = results[0].boxes.cls  # Clases predichas
+            masks = results[0].masks
+            if masks is None:
+                continue
+            coordenadas = masks.xyn
+
+            for lab, mask in zip(labels, coordenadas):
+                # Escribir el ID de la clase
+                f.write(f"{int(lab)} ")
+
+                # Escribir las coordenadas normalizadas (Yolov8 requiere coordenadas normalizadas entre 0 y 1)
+                for point in mask:
+                    x, y = point
+                    f.write(f"{x:.6f} {y:.6f} ")
+
+                # Finalizar la línea para este polígono
+                f.write("\n")
+
+    return results[0].names  # Devolver los nombres de las clases del modelo
 
 
 def label_multiple_yolov8(
@@ -278,6 +328,7 @@ def label_multiple_yolov8(
     imgsz=1280,
     tracking=False,
     val_ratio=0.2,
+    segmentation=False,
 ):
     # hacer una lista de todos los path de imagenes en el directorio input_folder
     glob_path = os.path.join(input_folder, "*.jpg")
@@ -307,25 +358,47 @@ def label_multiple_yolov8(
         valid_images_folder = crear_carpeta(valid, "images")
         valid_labels_folder = crear_carpeta(valid, "labels")
 
-    train_names = inferir_y_guardar(
-        train_images,
-        modelyolo,
-        train_images_folder,
-        train_labels_folder,
-        confidence,
-        iou=iou,
-        imgsz=imgsz,
-    )
-    if tracking == False:
-        inferir_y_guardar(
-            valid_images,
+    if segmentation == False:
+        train_names = inferir_y_guardar(
+            train_images,
             modelyolo,
-            valid_images_folder,
-            valid_labels_folder,
+            train_images_folder,
+            train_labels_folder,
             confidence,
             iou=iou,
             imgsz=imgsz,
         )
+    else:
+        train_names = inferir_y_guardar_segmentacion(
+            train_images,
+            modelyolo,
+            train_images_folder,
+            train_labels_folder,
+            confidence,
+            iou=iou,
+            imgsz=imgsz,
+        )
+    if tracking == False:
+        if segmentation == False:
+            inferir_y_guardar(
+                valid_images,
+                modelyolo,
+                valid_images_folder,
+                valid_labels_folder,
+                confidence,
+                iou=iou,
+                imgsz=imgsz,
+            )
+        else:
+            inferir_y_guardar_segmentacion(
+                valid_images,
+                modelyolo,
+                valid_images_folder,
+                valid_labels_folder,
+                confidence,
+                iou=iou,
+                imgsz=imgsz,
+            )
 
     # print(train_names)
     # Definir otras variables
