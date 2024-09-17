@@ -286,7 +286,9 @@ def inferir_y_guardar_segmentacion(
     """
     for image_path in image_paths:
         # Realizar la inferencia
-        results = model(source=image_path, conf=confidence, imgsz=imgsz)  # iou=iou
+        results = model(
+            source=image_path, conf=confidence, imgsz=imgsz, retina_masks=True
+        )  # iou=iou
 
         # Obtener el nombre de la imagen y copiarla a la carpeta destino
         image_name = os.path.basename(image_path)
