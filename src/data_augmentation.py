@@ -82,7 +82,7 @@ def save_aug_lab(transformed_bboxes, lab_pth, lab_name):
     with open(lab_out_pth, "w") as output:
         for bbox in transformed_bboxes:
             # updated_bbox = str(bbox).replace(",", "").replace("[", "").replace("]", "")
-            updated_bbox = " ".join([str(float(coord)) for coord in bbox])
+            updated_bbox = " ".join([str(int(bbox[0]))] + [str(float(coord)) for coord in bbox[1:]])
             output.write(updated_bbox + "\n")
 
 
@@ -193,7 +193,7 @@ def apply_aug(
                 ),
                 A.AdvancedBlur(
                     always_apply=False,
-                    p=1.0,
+                    p=0.1,
                     blur_limit=(3, 7),
                     sigmaX_limit=(0.2, 1.0),
                     sigmaY_limit=(0.2, 1.0),
