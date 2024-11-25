@@ -81,7 +81,8 @@ def save_aug_lab(transformed_bboxes, lab_pth, lab_name):
     lab_out_pth = os.path.join(lab_pth, lab_name)
     with open(lab_out_pth, "w") as output:
         for bbox in transformed_bboxes:
-            updated_bbox = str(bbox).replace(",", "").replace("[", "").replace("]", "")
+            # updated_bbox = str(bbox).replace(",", "").replace("[", "").replace("]", "")
+            updated_bbox = " ".join([str(float(coord)) for coord in bbox])
             output.write(updated_bbox + "\n")
 
 
@@ -392,7 +393,7 @@ def augment_images_reid(input_dir, output_dir, num_augmentations=3):
                 interpolation=0,
             ),
             A.ToGray(always_apply=False, p=0.1),
-            LocalGrayscalePatchReplacement(probability=1.0, p=0.4),
+            LocalGrayscalePatchReplacement(probability=1.0, always_apply=False, p=0.4),
         ]
     )
 
