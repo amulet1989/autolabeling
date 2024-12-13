@@ -4,7 +4,7 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/yolov8_raffin-productos-en-mano_v01.pt"
+    "trained_models/yolov8_product_hand_HD_v02.pt"
 )  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v16
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
