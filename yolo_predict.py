@@ -4,15 +4,15 @@ from src.util import seleccionar_video, seleccionar_imagen
 
 
 model = YOLO(
-    "trained_models/yolov8_product_hand_HD_v02.pt"
+    "trained_models/yolov8_raffin_person_all_camHD_v05.pt"
 )  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v16
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
 # Create VideoCapture object
-INPUT_VIDEO = seleccionar_video()
+# INPUT_VIDEO = seleccionar_video()
 # INPUT_IMAGE = seleccionar_imagen()
-# INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9558/h263/ch1/sub/av_stream"
+INPUT_VIDEO = "rtsp://admin:2Raffin001.@10.20.2.151"
 # INPUT_VIDEO = "rtsp://admin:2Mini001.@181.164.198.186:9556/live1"
 # INPUT_VIDEO = "rtsp://admin:2Mini001.@172.168.93.72:9563/h263/ch1/sub/av_stream"
 
