@@ -189,11 +189,11 @@ def apply_aug(
                 # A.ChannelShuffle(always_apply=False, p=0.3),
                 # A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
                 A.MotionBlur(
-                    always_apply=False, p=0.2, blur_limit=(3, 7), allow_shifted=True
+                    always_apply=False, p=0.25, blur_limit=(3, 7), allow_shifted=True
                 ),
                 A.AdvancedBlur(
                     always_apply=False,
-                    p=0.1,
+                    p=0.25,
                     blur_limit=(3, 7),
                     sigmaX_limit=(0.2, 1.0),
                     sigmaY_limit=(0.2, 1.0),
