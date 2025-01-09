@@ -1,4 +1,5 @@
 import os
+from PIL import Image
 
 
 def remove_empty_labels(image_dir, label_dir, remove_multiple=False):
@@ -162,3 +163,57 @@ def run_processing_dataset(
         print("removed empty")
     # correct_bad_coords(label_dir)
     # print("corrected negative")
+
+
+def filter_images(
+    input_folder,
+    output_folder="/filtered_images",
+    original_width=1280,
+    original_height=720,
+    aspect_ratio_threshold=0.9,
+    min_area_ratio=0.005,
+    overwrite=False,
+):
+    """
+    Filtra y elimina imágenes de una carpeta según proporción de ancho/alto y área mínima en relación al frame original.
+
+    Args:
+        input_folder (str): Carpeta de entrada con imágenes a filtrar.
+        output_folder (str): Carpeta de salida para las imágenes que pasan el filtro.
+        original_width (int): Ancho del frame original.
+        original_height (int): Altura del frame original.
+        aspect_ratio_threshold (float): Umbral máximo de proporción ancho/alto (default: 0.9).
+        min_area_ratio (float): Área mínima en relación al área del frame original (default: 0.01).
+        overwrite (bool): Si es True, elimina las imágenes que no pasan el filtro (default: False).
+    """
+    if not os.path.exists(output_folder):
+        if overwrite == False:
+            os.makedirs(output_folder)
+
+    # Área mínima permitida
+    original_area = original_width * original_height
+    min_area = original_area * min_area_ratio
+
+    for filename in os.listdir(input_folder):
+        if filename.endswith(".jpg"):
+            img_path = os.path.join(input_folder, filename)
+            try:
+                with Image.open(img_path) as img:
+                    width, height = img.size
+                    aspect_ratio = width / height
+                    area = width * height
+
+                    # Filtrar por proporción y área mínima
+                    if aspect_ratio > aspect_ratio_threshold or area < min_area:
+                        print(
+                            f"Eliminando: {filename} (aspect_ratio={aspect_ratio:.2f}, area={area})"
+                        )
+                        if overwrite:
+                            img.close()  # Cierra explícitamente la imagen
+                            os.remove(img_path)
+                    else:
+                        # Copiar imagen al directorio de salida
+                        if overwrite == False:
+                            img.save(os.path.join(output_folder, filename))
+            except Exception as e:
+                print(f"Error al procesar {filename}: {e}")
