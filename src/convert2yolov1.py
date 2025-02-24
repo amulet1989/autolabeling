@@ -108,10 +108,20 @@ def cvat_to_ultralytics(cvat_dataset_path, output_path):
 
         # Copiar la imagen y el archivo de etiquetas
         shutil.copy(os.path.join(cvat_dataset_path, image_path), new_image_path)
-        shutil.copy(
-            os.path.join(cvat_dataset_path, "labels/Train", label_name),
-            os.path.join(output_path, "train/labels", label_name),
-        )
+
+        # Copiar el archivo de label si existe, sino crearlo
+        if os.path.exists(os.path.join(cvat_dataset_path, "labels/Train", label_name)):
+            shutil.copy(
+                os.path.join(cvat_dataset_path, "labels/Train", label_name),
+                os.path.join(output_path, "train/labels", label_name),
+            )
+        else:
+            with open(
+                os.path.join(output_path, "train/labels", label_name), "w"
+            ) as f:
+                f.write("")
+
+       
 
     # Procesar las imágenes y labels de Validation (si existen)
     validation_images_path = os.path.join(cvat_dataset_path, "Validation.txt")
@@ -130,11 +140,20 @@ def cvat_to_ultralytics(cvat_dataset_path, output_path):
 
             # Copiar la imagen y el archivo de etiquetas
             shutil.copy(os.path.join(cvat_dataset_path, image_path), new_image_path)
-            shutil.copy(
-                os.path.join(cvat_dataset_path, "labels/Validation", label_name),
-                os.path.join(output_path, "valid/labels", label_name),
-            )
 
+            # Copiar el archivo de label si existe, sino crearlo
+            if os.path.exists(os.path.join(cvat_dataset_path, "labels/Validation", label_name)):
+                shutil.copy(
+                    os.path.join(cvat_dataset_path, "labels/Validation", label_name),
+                    os.path.join(output_path, "valid/labels", label_name),
+                )
+            else:
+                with open(
+                    os.path.join(output_path, "valid/labels", label_name), "w"
+                ) as f:
+                    f.write("")
+                
+                    
     # Crear el archivo data.yaml para Ultralytics
     ultralytics_data = {
         "names": class_names,
