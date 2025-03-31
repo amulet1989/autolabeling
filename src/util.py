@@ -7,6 +7,8 @@ import yaml
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import defaultdict
+from pathlib import Path
 
 # from scipy import stats
 
@@ -600,3 +602,140 @@ def dividir_en_subsets(directorio, porcentaje_validacion=0.2):
     print(
         f"Imágenes divididas en train y validation. {num_validacion} imágenes en validation."
     )
+
+# Muestreo estratificado de un datset de entrenamiento yolov8
+def split_yolov8_dataset(dataset_dir, val_fraction=0.2, num_classes=None, seed=42):
+    """
+    Divide un dataset YOLOv8 en entrenamiento y validación con muestreo estratificado.
+    
+    Args:
+        dataset_dir (str): Directorio raíz del dataset
+        val_fraction (float): Fracción de datos para validación (entre 0 y 1)
+        num_classes (int): Número de clases en el dataset
+        seed (int): Semilla para reproducibilidad
+    
+    Returns:
+        None: Crea nueva estructura de directorios con train y val
+    """
+    # Validar parámetros
+    if not 0 <= val_fraction <= 1:
+        raise ValueError("val_fraction debe estar entre 0 y 1")
+    if num_classes is not None and num_classes <= 0:
+        raise ValueError("num_classes debe ser positivo")
+
+    # Establecer semilla para reproducibilidad
+    random.seed(seed)
+    
+    # Directorios
+    dataset_dir = Path(dataset_dir)
+    train_img_dir = dataset_dir / "train" / "images"
+    train_lbl_dir = dataset_dir / "train" / "labels"
+    
+    # Obtener lista de imágenes
+    images = [f for f in train_img_dir.glob("*.jpg") if f.is_file()]
+    if not images:
+        raise FileNotFoundError("No se encontraron imágenes en el directorio")
+    
+    # Crear diccionario para contar instancias por clase
+    class_counts = defaultdict(list)
+    
+    # Leer etiquetas y asignar imágenes a clases
+    for img_path in images:
+        label_path = train_lbl_dir / f"{img_path.stem}.txt"
+        if not label_path.exists():
+            continue
+            
+        with open(label_path, 'r') as f:
+            lines = f.readlines()
+            if not lines:  # Imagen sin objetos
+                class_counts[-1].append(img_path)
+                continue
+                
+            # Usar la clase más frecuente en la imagen como clase representativa
+            class_freq = defaultdict(int)
+            for line in lines:
+                class_id = int(line.split()[0])
+                class_freq[class_id] += 1
+            dominant_class = max(class_freq.items(), key=lambda x: x[1])[0]
+            class_counts[dominant_class].append(img_path)
+    
+    # Calcular número de muestras por clase para validación
+    val_samples = {}
+    for class_id, img_list in class_counts.items():
+        n_samples = max(1, int(len(img_list) * val_fraction))  # Al menos 1 muestra
+        val_samples[class_id] = n_samples
+    
+    # Realizar muestreo estratificado
+    val_images = []
+    for class_id, n_samples in val_samples.items():
+        class_images = class_counts[class_id]
+        if len(class_images) <= n_samples:
+            val_images.extend(class_images)
+        else:
+            val_images.extend(random.sample(class_images, n_samples))
+    
+    train_images = [img for img in images if img not in val_images]
+    
+    # Contar clases en cada split
+    train_class_counts = defaultdict(int)
+    val_class_counts = defaultdict(int)
+    
+    for img_list, counts in [(train_images, train_class_counts), (val_images, val_class_counts)]:
+        for img_path in img_list:
+            label_path = train_lbl_dir / f"{img_path.stem}.txt"
+            if not label_path.exists():
+                continue
+            with open(label_path, 'r') as f:
+                lines = f.readlines()
+                if not lines:
+                    counts[-1] += 1
+                    continue
+                class_freq = defaultdict(int)
+                for line in lines:
+                    class_id = int(line.split()[0])
+                    class_freq[class_id] += 1
+                dominant_class = max(class_freq.items(), key=lambda x: x[1])[0]
+                counts[dominant_class] += 1
+    
+    # Crear nueva estructura de directorios
+    for split, img_list in [("train", train_images), ("valid", val_images)]:
+        split_img_dir = dataset_dir / split / "images"
+        split_lbl_dir = dataset_dir / split / "labels"
+        
+        # Crear directorios si no existen
+        split_img_dir.mkdir(parents=True, exist_ok=True)
+        split_lbl_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Mover archivos
+        for img_path in img_list:
+            label_path = train_lbl_dir / f"{img_path.stem}.txt"
+            shutil.move(img_path, split_img_dir / img_path.name)
+            if label_path.exists():
+                shutil.move(label_path, split_lbl_dir / label_path.name)
+    
+    # Actualizar data.yaml si existe
+    yaml_path = dataset_dir / "data.yaml"
+    if yaml_path.exists():
+        with open(yaml_path, 'r') as f:
+            yaml_content = f.read()
+        yaml_content = yaml_content.replace("train: train/images", "train: ./train/images")
+        yaml_content = yaml_content.replace("val: train/images", "val: ./valid/images")
+        with open(yaml_path, 'w') as f:
+            f.write(yaml_content)
+    
+    # Imprimir estadísticas
+    print(f"\nTotal imágenes: {len(images)}")
+    print(f"Entrenamiento: {len(train_images)} ({len(train_images)/len(images)*100:.1f}%)")
+    print(f"Validación: {len(val_images)} ({len(val_images)/len(images)*100:.1f}%)")
+    
+    print("\nDistribución por clase (basada en clase dominante por imagen):")
+    print("\nClase | Train | Val | Total | % en Val")
+    print("-" * 45)
+    all_classes = set(train_class_counts.keys()) | set(val_class_counts.keys())
+    for class_id in sorted(all_classes):
+        train_count = train_class_counts[class_id]
+        val_count = val_class_counts[class_id]
+        total = train_count + val_count
+        val_percent = (val_count / total * 100) if total > 0 else 0
+        class_name = "Sin objetos" if class_id == -1 else f"Clase {class_id}"
+        print(f"{class_name:6} | {train_count:5} | {val_count:3} | {total:5} | {val_percent:6.1f}%")

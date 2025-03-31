@@ -6,8 +6,8 @@ import os
 
 
 model = YOLO(
-    "trained_models/yolov8_product_hand_no_cell_HD_v01.pt"
-)  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v16
+    "trained_models/producto_cinta_yolov8seg_v5.pt"
+)  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v18
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
 
@@ -20,7 +20,7 @@ model = YOLO(
 
 
 def show_inference():
-    INPUT_VIDEO = "rtsp://admin:2Mini001.@10.93.27.207:554"
+    INPUT_VIDEO = seleccionar_video()
     cap = cv2.VideoCapture(INPUT_VIDEO)
     win_name = "Camera Preview"
     cv2.namedWindow(win_name, cv2.WINDOW_NORMAL)
@@ -30,7 +30,7 @@ def show_inference():
         source=INPUT_VIDEO,  # INPUT_VIDEO / INPUT_IMAGE
         stream=True,  # True
         save=False,
-        conf=0.25,
+        conf=0.35,
         imgsz=640 ,  # 704 1280
         iou=0.7,
         # verbose=False,
@@ -38,8 +38,8 @@ def show_inference():
         show=True,
         tracker="bytetrack.yaml", # bytetrack.yaml, botsort.yaml
         persist=True,
-        # show_boxes=False,
-        # retina_masks=True,
+        show_boxes=False,
+        retina_masks=True,
     )   # generator of Results objects
 
     for r in results:
