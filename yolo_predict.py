@@ -6,7 +6,7 @@ import os
 
 
 model = YOLO(
-    "trained_models/producto_cinta_yolov8seg_v5.pt"
+    "trained_models/yolov8m_cf_caja_person_cart_640x480_v2.pt"
 )  # yolov8m_640x480_cf_9cam_v44 / yolov8m_cf_caja_640x480_v18
 # model = RTDETR("rtdetr-l.pt")  # rtdetr-l.pt
 
@@ -38,7 +38,7 @@ def show_inference():
         show=True,
         tracker="bytetrack.yaml", # bytetrack.yaml, botsort.yaml
         persist=True,
-        show_boxes=False,
+        show_boxes=True,
         retina_masks=True,
     )   # generator of Results objects
 

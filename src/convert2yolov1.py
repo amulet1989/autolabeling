@@ -4,6 +4,42 @@ import yaml
 import zipfile
 import argparse
 
+def clean_invalid_labels(directory, min_points=3):
+    """
+    Recorre todos los archivos labels.txt en el directorio especificado y elimina
+    las filas que contienen solo el ID de clase o que no tienen suficientes puntos
+    para formar un polígono válido (menos de min_points puntos).
+
+    Args:
+        directory (str): Ruta al directorio que contiene los archivos labels.txt
+        min_points (int): Número mínimo de puntos requeridos para un polígono (default: 3)
+    """
+    # Calcular el número mínimo de campos esperados (ID de clase + 2*min_points para x, y)
+    min_fields = 1 + 2 * min_points
+
+    # Recorrer todos los archivos en el directorio
+    for filename in os.listdir(directory):
+        if filename.endswith('.txt'):
+            file_path = os.path.join(directory, filename)
+            try:
+                # Leer el contenido del archivo
+                with open(file_path, 'r') as file:
+                    lines = file.readlines()
+
+                # Filtrar las líneas que tienen suficientes campos para un polígono válido
+                cleaned_lines = [
+                    line.strip() for line in lines
+                    if len(line.strip().split()) >= min_fields
+                ]
+
+                # Sobrescribir el archivo con las líneas válidas
+                with open(file_path, 'w') as file:
+                    for line in cleaned_lines:
+                        file.write(line + '\n')
+                
+                print(f"Procesado: {filename}")
+            except Exception as e:
+                print(f"Error al procesar {filename}: {str(e)}")
 
 ###################################
 ## Modleos datasets de segmentacion ##
