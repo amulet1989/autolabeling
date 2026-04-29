@@ -5,13 +5,9 @@ from ultralytics import YOLO
 from src.util import seleccionar_video
 
 # Load the YOLOv8 model
-<<<<<<< HEAD
-model = YOLO('yolov8n.pt')
-classes=0
-=======
-model = YOLO("yolov5su.pt")
+model = YOLO("trained_models/yolov8m_1280_oracle_product_person_v02.pt")
+# model = YOLO("yolo26n-pose.pt")  # load an official model
 # classes = 0
->>>>>>> c177074a5e10a2b13b72aa0d12ec22da67214a9d
 
 # Open the video file
 video_path = seleccionar_video()
@@ -24,11 +20,7 @@ while cap.isOpened():
 
     if success:
         # Run YOLOv8 tracking on the frame, persisting tracks between frames
-<<<<<<< HEAD
-        results = model.track(frame, persist=True, classes=classes, imgsz=640)
-=======
         results = model.track(frame, persist=True, imgsz=640)
->>>>>>> c177074a5e10a2b13b72aa0d12ec22da67214a9d
 
         # Visualize the results on the frame
         annotated_frame = results[0].plot()
@@ -45,8 +37,4 @@ while cap.isOpened():
 
 # Release the video capture object and close the display window
 cap.release()
-<<<<<<< HEAD
 cv2.destroyAllWindows()
-=======
-cv2.destroyAllWindows()
->>>>>>> c177074a5e10a2b13b72aa0d12ec22da67214a9d

@@ -142,7 +142,7 @@ def apply_aug(
     height=480,  # 576,
     width=640,  # 704,
 ):
-    if val:
+    if val and (height is not None and width is not None):
         transform = A.Compose(
             [
                 A.Resize(
@@ -151,6 +151,59 @@ def apply_aug(
                     height=height,  # 480,
                     width=width,  # 640,
                 ),
+            ],
+            bbox_params=A.BboxParams(format="yolo"),
+        )
+    elif val and (height is None or width is None):
+        transform = A.Compose(
+            [],
+            bbox_params=A.BboxParams(format="yolo"),
+        )
+    elif height is None or width is None:
+        transform = A.Compose(
+            [
+                A.HorizontalFlip(always_apply=False, p=0.5),
+                # A.VerticalFlip(p=0.2),
+                # A.RandomBrightnessContrast(always_apply=False, p=0.3),
+                A.RandomBrightnessContrast(
+                    always_apply=False, brightness_limit=0.2, contrast_limit=0, p=0.3
+                ),
+                A.RandomRotate90(always_apply=False, p=0.25),
+                # A.CLAHE(
+                #     always_apply=False, clip_limit=(0, 1), tile_grid_size=(8, 8), p=0.3
+                # ),
+                # A.ShiftScaleRotate(
+                #     always_apply=False,
+                #     p=0.2,
+                #     shift_limit_x=(-0.02, 0.02),
+                #     shift_limit_y=(-0.02, 0.02),
+                #     scale_limit=(-0.09999999999999998, 0.10000000000000009),
+                #     rotate_limit=(-5, 5),
+                #     interpolation=1,
+                #     border_mode=2,
+                #     value=(0, 0, 0),
+                #     mask_value=None,
+                #     rotate_method="largest_box",
+                # ),
+                A.RandomToneCurve(always_apply=False, p=0.3, scale=0.1),
+                # A.ChannelShuffle(always_apply=False, p=0.3),
+                # A.Blur(always_apply=False, p=0.5, blur_limit=(1, 3)),
+                A.MotionBlur(
+                    always_apply=False, p=0.25, blur_limit=(3, 7), allow_shifted=True
+                ),
+                A.AdvancedBlur(
+                    always_apply=False,
+                    p=0.25,
+                    blur_limit=(3, 7),
+                    sigmaX_limit=(0.2, 1.0),
+                    sigmaY_limit=(0.2, 1.0),
+                    rotate_limit=(-90, 90),
+                    beta_limit=(0.5, 8.0),
+                    noise_limit=(0.9, 1.1),
+                ),
+                # A.Downscale(always_apply=False, p=0.3, scale_min=0.5, scale_max=0.99),
+                A.ToGray(always_apply=False, p=0.1),
+                LocalGrayscalePatchReplacement(probability=1.0, p=0.4),
             ],
             bbox_params=A.BboxParams(format="yolo"),
         )
@@ -164,6 +217,7 @@ def apply_aug(
                     width=width,
                 ),
                 A.HorizontalFlip(always_apply=False, p=0.5),
+                A.RandomRotate90(always_apply=False, p=0.25),
                 # A.VerticalFlip(p=0.2),
                 # A.RandomBrightnessContrast(always_apply=False, p=0.3),
                 A.RandomBrightnessContrast(

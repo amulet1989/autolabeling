@@ -66,7 +66,7 @@ def ultralytics_to_cvat(ultralytics_dataset_path, output_path):
     with open(train_txt_path, "w") as f_train:
         for image_name in os.listdir(train_image_dir):
             image_path = os.path.join("images/Train", image_name)
-            f_train.write(f"{image_path}\n")
+            f_train.write(f"data/{image_path}\n")
             # Copiar imágenes y etiquetas
             shutil.copy(
                 os.path.join(train_image_dir, image_name),
@@ -87,7 +87,7 @@ def ultralytics_to_cvat(ultralytics_dataset_path, output_path):
         with open(val_txt_path, "w") as f_val:
             for image_name in os.listdir(val_image_dir):
                 image_path = os.path.join("images/Validation", image_name)
-                f_val.write(f"{image_path}\n")
+                f_val.write(f"data/{image_path}\n")
                 # Copiar imágenes y etiquetas
                 shutil.copy(
                     os.path.join(val_image_dir, image_name),
@@ -252,7 +252,15 @@ def convert_to_yolov1_format(dataset_path, with_val=True):
 
                 label_file = image_file.replace(".jpg", ".txt")
                 label_path = os.path.join(valid_labels_path, label_file)
-                shutil.copy(label_path, obj_validation_data_path)
+                # --- INICIO DE LA CORRECCIÓN (VALID) ---
+                if os.path.exists(label_path):
+                    # Si la etiqueta existe, la copiamos
+                    shutil.copy(label_path, obj_validation_data_path)
+                else:
+                    # Si no existe, creamos un archivo vacío en el destino
+                    empty_label_dest_path = os.path.join(obj_validation_data_path, label_file)
+                    with open(empty_label_dest_path, 'w') as f:
+                        pass # Crea un archivo vacío
 
         with open(
             os.path.join(yolov1_path, "Validation.txt"), "w"
@@ -298,7 +306,15 @@ def convert_to_yolov1_format(dataset_path, with_val=True):
 
             label_file = image_file.replace(".jpg", ".txt")
             label_path = os.path.join(dataset_path, "train", "labels", label_file)
-            shutil.copy(label_path, obj_train_data_path)
+            # --- INICIO DE LA CORRECCIÓN (TRAIN) ---
+            if os.path.exists(label_path):
+                # Si la etiqueta existe, la copiamos
+                shutil.copy(label_path, obj_train_data_path)
+            else:
+                # Si no existe, creamos un archivo vacío en el destino
+                empty_label_dest_path = os.path.join(obj_train_data_path, label_file)
+                with open(empty_label_dest_path, 'w') as f:
+                    pass # Crea un archivo vacío
 
     # Crear Train.txt y Validation.txt
     with open(os.path.join(yolov1_path, "Train.txt"), "w") as train_txt_file:
